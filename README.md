@@ -51,7 +51,7 @@ Agent      Agent         Agent         Agent            Agent
                fridges/donors/runners)     (S3 + CloudFront)
 ```
 
-Full detail: [`TECHNICAL.md`](./TECHNICAL.md) · Agent-by-agent spec: [`AGENTS.md`](./AGENTS.md) · Tool-by-tool spec: [`SKILLS.md`](./SKILLS.md) · Product requirements: [`PRD.md`](./PRD.md) · Visual design system: [`frontend-design.md`](./frontend-design.md)
+
 
 Deployed via **Amazon Bedrock AgentCore Runtime**; models served through **Amazon Bedrock (Nova Micro/Lite)**; messaging via **Amazon Pinpoint SMS**; storage via **DynamoDB**; compute glue via **Lambda + EventBridge**. Every service used sits inside AWS's Always Free tier or the hackathon's promotional credit — see the cost table in `TECHNICAL.md`.
 
@@ -111,9 +111,9 @@ Start from the bottom and build up — this is the order the system actually get
 
 1. **The data layer (DynamoDB).** Everything the system knows lives in one table, keyed so that a fridge's identity and its full event history sit next to each other (`FRIDGE#<id>` partition, `EVENT#<timestamp>` sort key). This means the Report Agent never needs a separate analytics pipeline — it queries the same table everything else writes to.
 
-2. **The tools (`SKILLS.md`).** Above the data layer sit small, single-purpose functions — `find_open_offers`, `score_match`, `check_safety_exclusion`, `send_sms`. Each is independently testable and, critically, each is *deterministic where determinism matters* (distance math, the safety exclusion check) and only hands off to the model where judgment is genuinely required.
+2. **The tools.** Above the data layer sit small, single-purpose functions — `find_open_offers`, `score_match`, `check_safety_exclusion`, `send_sms`. Each is independently testable and, critically, each is *deterministic where determinism matters* (distance math, the safety exclusion check) and only hands off to the model where judgment is genuinely required.
 
-3. **The agents (`AGENTS.md`).** Each agent is a Strands `Agent` wrapping a cluster of related tools with a narrow system prompt. An agent's job is to decide *which* tool to call and *how to interpret* an ambiguous input — not to reimplement logic the tools already handle deterministically.
+3. **The agents.** Each agent is a Strands `Agent` wrapping a cluster of related tools with a narrow system prompt. An agent's job is to decide *which* tool to call and *how to interpret* an ambiguous input — not to reimplement logic the tools already handle deterministically.
 
 4. **The orchestrator.** A Strands agent whose tools are the other agents ("agents as tools"). It routes inbound events by reasoning about the event content, not a hardcoded switch statement — this is the layer that lets a message like "5th st fridge dead again 😩" get correctly routed to the Intake Agent, resolved to the right fridge ID, and turned into a status update, without anyone writing a regex for it.
 
@@ -127,4 +127,4 @@ MIT — see `LICENSE`.
 
 ## Team / hackathon submission notes
 
-Built during the Agents for Humans Hackathon submission window (Aug 10 – Sep 14, 2026). See `PRD.md` §9 for how this submission maps to each judging criterion.
+Built during the Agents for Humans Hackathon submission window (Aug 10 – Sep 14, 2026).
