@@ -1,0 +1,44 @@
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+python/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node.js
+node_modules/
+dist/
+build/
+.npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment Variables and Credentials
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+aws-creds*
+
+# AWS CDK
+cdk.out/
+.cdk.staging/
+
+# IDEs and System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
