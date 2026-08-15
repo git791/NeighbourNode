@@ -1,0 +1,195 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: NeighborNode — autonomous agent network for community fridge operations
+
+Globals:
+  Function:
+    Runtime: python3.11
+    Timeout: 300          # Agent chains can take up to 5 minutes
+    MemorySize: 512
+    Environment:
+      Variables:
+        DYNAMODB_TABLE_NAME: !Ref NeighborNodeTable
+        AWS_REGION_NAME: !Ref AWS::Region   # use AWS_REGION_NAME to avoid collision with reserved AWS_REGION
+        BEDROCK_MODEL_ID: amazon.nova-lite-v1
+        BEDROCK_MODEL_ID_MICRO: amazon.nova-micro-v1
+        FOOD_SAFETY_EXCLUSION_LIST: config/food_safety_exclusions.json
+        SUPPORTED_LANGUAGES: "en,es"
+        LOG_LEVEL: INFO
+    Tracing: Active
+
+Parameters:
+  PinpointAppId:
+    Type: String
+    Description: Amazon Pinpoint Application ID for SMS
+    Default: ""
+  PinpointOriginationNumber:
+    Type: String
+    Description: E.164 phone number for SMS origination
+    Default: ""
+  CoordinatorPhone:
+    Type: String
+    Description: E.164 phone number for Coordinator approval notifications
+    Default: ""
+
+Resources:
+  NeighborNodeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: NeighborNodeTable
+      BillingMode: PAY_PER_REQUEST    # on-demand, always-free tier at demo scale
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+      Policies:
+        - PolicyName: NeighborNodePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource: !GetAtt NeighborNodeTable.Arn
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:Converse
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - mobiletargeting:SendMessages
+                Resource: !Sub "arn:aws:mobiletargeting:${AWS::Region}:${AWS::AccountId}:apps/${PinpointAppId}/messages"
+
+  WebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda/webhook_handler.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Description: Receives inbound SMS/webhook events and routes through the Orchestrator
+      Environment:
+        Variables:
+          PINPOINT_APP_ID: !Ref PinpointAppId
+          PINPOINT_ORIGINATION_NUMBER: !Ref PinpointOriginationNumber
+          COORDINATOR_PHONE: !Ref CoordinatorPhone
+      Events:
+        InboundWebhook:
+          Type: HttpApi
+          Properties:
+            Path: /inbound
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+
+  DashboardFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda/dashboard_handler.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Description: Returns live dashboard state for the coordinator frontend
+      Events:
+        GetDashboard:
+          Type: HttpApi
+          Properties:
+            Path: /dashboard
+            Method: GET
+            ApiId: !Ref NeighborNodeApi
+        GetReport:
+          Type: HttpApi
+          Properties:
+            Path: /report
+            Method: GET
+            ApiId: !Ref NeighborNodeApi
+
+  ApprovalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda/approval_handler.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Description: Handles Coordinator approve/reject actions from the dashboard
+      Environment:
+        Variables:
+          PINPOINT_APP_ID: !Ref PinpointAppId
+          PINPOINT_ORIGINATION_NUMBER: !Ref PinpointOriginationNumber
+          COORDINATOR_PHONE: !Ref CoordinatorPhone
+      Events:
+        ApproveItem:
+          Type: HttpApi
+          Properties:
+            Path: /approve
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+        RejectItem:
+          Type: HttpApi
+          Properties:
+            Path: /reject
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+
+  SchedulerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda/scheduler_handler.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Description: Triggered by EventBridge every 2 hours to run Forecast Agent
+      Events:
+        ForecastSchedule:
+          Type: ScheduleV2
+          Properties:
+            ScheduleExpression: "rate(2 hours)"
+            Description: Runs Forecast Agent every 2 hours
+
+  NeighborNodeApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Description: NeighborNode API — inbound webhooks + dashboard state
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"           # Restrict to your Amplify domain in production
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+
+Outputs:
+  ApiBaseUrl:
+    Description: "API Gateway base URL — copy this into frontend/.env.local as VITE_API_BASE_URL"
+    Value: !Sub "https://${NeighborNodeApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Export:
+      Name: NeighborNodeApiBaseUrl
+
+  DynamoTableName:
+    Description: "DynamoDB table name"
+    Value: !Ref NeighborNodeTable
+    Export:
+      Name: NeighborNodeTableName

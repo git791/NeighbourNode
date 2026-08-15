@@ -1,0 +1,149 @@
+{
+  "_comment": "Seed data for the NeighborNode local demo. Run: python -m neighbornode.local_runner --seed data/seed_demo.json",
+  "_note": "Coordinates are realistic Brooklyn, NYC locations. Phone numbers use a non-dialable demo prefix.",
+
+  "fridges": [
+    {
+      "id": "fridge-5th-dean",
+      "name": "5th Ave & Dean St Fridge",
+      "address": "5th Ave & Dean St, Brooklyn, NY 11217",
+      "lat": 40.6802,
+      "lng": -73.9764,
+      "capacity": 5,
+      "status": "empty",
+      "last_restocked_at": "2026-08-14T18:30:00Z",
+      "host_phone": "+17185550101",
+      "notes": "Blue door, behind the laundromat on the corner"
+    },
+    {
+      "id": "fridge-crown-bedford",
+      "name": "Crown St & Bedford Ave Fridge",
+      "address": "Crown St & Bedford Ave, Brooklyn, NY 11225",
+      "lat": 40.6618,
+      "lng": -73.9579,
+      "capacity": 4,
+      "status": "low",
+      "last_restocked_at": "2026-08-15T09:00:00Z",
+      "host_phone": "+17185550102",
+      "notes": "Red fridge, outside Lena's salon — ask inside if locked"
+    },
+    {
+      "id": "fridge-prospect-7th",
+      "name": "Prospect Ave & 7th Ave Fridge",
+      "address": "Prospect Ave & 7th Ave, Brooklyn, NY 11215",
+      "lat": 40.6581,
+      "lng": -73.9829,
+      "capacity": 6,
+      "status": "stocked",
+      "last_restocked_at": "2026-08-15T14:00:00Z",
+      "host_phone": "+17185550103",
+      "notes": "Green fridge with mural by José M., next to the bike rack"
+    },
+    {
+      "id": "fridge-bedford-monroe",
+      "name": "Bedford Ave & Monroe St Fridge",
+      "address": "Bedford Ave & Monroe St, Brooklyn, NY 11216",
+      "lat": 40.6919,
+      "lng": -73.9529,
+      "capacity": 3,
+      "status": "empty",
+      "last_restocked_at": "2026-08-13T20:00:00Z",
+      "host_phone": "+17185550104",
+      "notes": "White fridge with hand-painted flowers, under the awning"
+    }
+  ],
+
+  "donors": [
+    {
+      "id": "donor-maplewood-bakery",
+      "name": "Maplewood Bakery",
+      "address": "234 Flatbush Ave, Brooklyn, NY 11217",
+      "lat": 40.6750,
+      "lng": -73.9700,
+      "phone": "+17185550201",
+      "channel": "sms",
+      "verified": true,
+      "notes": "End-of-day bread available most weekdays after 6 PM"
+    },
+    {
+      "id": "donor-corner-garden",
+      "name": "Corner Garden Collective",
+      "address": "890 Nostrand Ave, Brooklyn, NY 11225",
+      "lat": 40.6650,
+      "lng": -73.9480,
+      "phone": "+17185550202",
+      "channel": "sms",
+      "verified": true,
+      "notes": "Community garden — seasonal produce, weekends and Wednesday evenings"
+    },
+    {
+      "id": "donor-sunrise-grocery",
+      "name": "Sunrise Grocery",
+      "address": "412 Rogers Ave, Brooklyn, NY 11225",
+      "lat": 40.6820,
+      "lng": -73.9510,
+      "phone": "+17185550203",
+      "channel": "sms",
+      "verified": false,
+      "notes": "New donor — first offer held for Coordinator confirmation per guardrail policy"
+    }
+  ],
+
+  "runners": [
+    {
+      "id": "runner-alex-m",
+      "name": "Alex M.",
+      "phone": "+17185550301",
+      "lat": 40.6750,
+      "lng": -73.9750,
+      "availability": "available",
+      "active_dispatch_id": null,
+      "transport": "bicycle",
+      "notes": "Available weekday evenings and weekends"
+    },
+    {
+      "id": "runner-jordan-k",
+      "name": "Jordan K.",
+      "phone": "+17185550302",
+      "lat": 40.6680,
+      "lng": -73.9700,
+      "availability": "available",
+      "active_dispatch_id": null,
+      "transport": "car",
+      "notes": "Has cargo space, available most days"
+    }
+  ],
+
+  "offers": [
+    {
+      "id": "offer-maplewood-bread-001",
+      "donor_id": "donor-maplewood-bakery",
+      "food_type": "whole grain bread loaves",
+      "qty_estimate": "8 loaves (~4 kg)",
+      "perishability_window_hours": 18,
+      "status": "open",
+      "created_at": "2026-08-15T18:00:00Z",
+      "notes": "Assorted whole grain and sourdough, day-old but fresh"
+    },
+    {
+      "id": "offer-corner-garden-veg-001",
+      "donor_id": "donor-corner-garden",
+      "food_type": "mixed garden vegetables",
+      "qty_estimate": "approx 3 kg — tomatoes, zucchini, herbs",
+      "perishability_window_hours": 48,
+      "status": "open",
+      "created_at": "2026-08-15T16:30:00Z",
+      "notes": "Freshly harvested this morning, no pesticides"
+    }
+  ],
+
+  "demo_events": [
+    {
+      "_comment": "This is the simulated inbound SMS fired by local_runner.py to trigger the full orchestrator chain",
+      "type": "inbound_sms",
+      "sender": "+17185550101",
+      "text": "5th st fridge is completely empty again :(",
+      "channel": "sms"
+    }
+  ]
+}

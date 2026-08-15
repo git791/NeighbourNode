@@ -1,44 +1,58 @@
-# Virtual Environments
+# ── Internal project documentation ───────────────────────────
+# Gitignored to keep the repo clean for public viewing.
+# README.md is intentionally excluded from this list.
+AGENTS.md
+PRD.md
+SKILLS.md
+TECHNICAL.md
+frontend-design.md
+
+# ── Python ───────────────────────────────────────────────────
 .venv/
 venv/
-ENV/
 env/
-python/
-
-# Python Cache
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Node.js
-node_modules/
+.Python
+*.egg-info/
 dist/
 build/
-.npm
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.cover
+.coverage
+htmlcov/
+.hypothesis/
 
-# Environment Variables and Credentials
+# ── Environment / secrets ─────────────────────────────────────
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*.pem
-*.key
-aws-creds*
+.env.*.local
 
-# AWS CDK
+# ── AWS SAM ───────────────────────────────────────────────────
+.aws-sam/
+samconfig.toml
+packaged.yaml
 cdk.out/
-.cdk.staging/
 
-# IDEs and System files
-.vscode/
-.idea/
+# ── Node / Frontend ───────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# ── OS ────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace

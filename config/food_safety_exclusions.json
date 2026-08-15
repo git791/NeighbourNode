@@ -1,0 +1,86 @@
+[
+  {
+    "pattern": "raw meat",
+    "reason": "Raw meat requires temperature-controlled handling and cold-chain verification not guaranteed during volunteer transport"
+  },
+  {
+    "pattern": "raw poultry",
+    "reason": "Raw poultry presents high cross-contamination risk and requires cold-chain handling"
+  },
+  {
+    "pattern": "raw chicken",
+    "reason": "Raw poultry presents high cross-contamination risk and requires cold-chain handling"
+  },
+  {
+    "pattern": "raw fish",
+    "reason": "Raw fish requires cold-chain handling not guaranteed during volunteer transport"
+  },
+  {
+    "pattern": "raw seafood",
+    "reason": "Raw seafood requires cold-chain handling not guaranteed during volunteer transport"
+  },
+  {
+    "pattern": "home-canned",
+    "reason": "Home-canned goods without commercial labeling cannot be verified for safe pressure processing — botulism risk"
+  },
+  {
+    "pattern": "home canned",
+    "reason": "Home-canned goods without commercial labeling cannot be verified for safe pressure processing — botulism risk"
+  },
+  {
+    "pattern": "unlabeled canned",
+    "reason": "Unlabeled canned goods cannot be verified for safe processing or expiry"
+  },
+  {
+    "pattern": "unlabeled jar",
+    "reason": "Unlabeled jars cannot be verified for safe processing or contents"
+  },
+  {
+    "pattern": "alcohol",
+    "reason": "Alcohol distribution requires licensing not held by this mutual-aid network"
+  },
+  {
+    "pattern": "beer",
+    "reason": "Alcohol distribution requires licensing not held by this mutual-aid network"
+  },
+  {
+    "pattern": "wine",
+    "reason": "Alcohol distribution requires licensing not held by this mutual-aid network"
+  },
+  {
+    "pattern": "spirits",
+    "reason": "Alcohol distribution requires licensing not held by this mutual-aid network"
+  },
+  {
+    "pattern": "expired",
+    "reason": "Item is past its stated safe consumption window"
+  },
+  {
+    "pattern": "past expiry",
+    "reason": "Item is past its stated safe consumption window"
+  },
+  {
+    "pattern": "past its date",
+    "reason": "Item is past its stated safe consumption window"
+  },
+  {
+    "pattern": "moldy",
+    "reason": "Visible mold indicates spoilage — item cannot be safely distributed"
+  },
+  {
+    "pattern": "mould",
+    "reason": "Visible mould indicates spoilage — item cannot be safely distributed"
+  },
+  {
+    "pattern": "unpasteurized",
+    "reason": "Unpasteurized dairy or juice presents safety risk for immunocompromised individuals"
+  },
+  {
+    "pattern": "raw milk",
+    "reason": "Unpasteurized raw milk presents safety risk and is prohibited for distribution in most jurisdictions"
+  },
+  {
+    "pattern": "recalled",
+    "reason": "Product under active recall cannot be distributed"
+  }
+]
