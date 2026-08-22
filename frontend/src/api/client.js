@@ -1,3 +1,5 @@
+import { mockDashboardState } from './mockData.js';
+
 const BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 async function apiFetch(path, options = {}) {
@@ -16,7 +18,13 @@ async function apiFetch(path, options = {}) {
   return res.json();
 }
 
-export const getDashboardState = () => apiFetch('/dashboard');
+export const getDashboardState = () => {
+  if (!BASE) {
+    // No real API deployed yet — use mock data so the dashboard has content to show.
+    return Promise.resolve(mockDashboardState);
+  }
+  return apiFetch('/dashboard');
+};
 
 export const approveItem = (approvalId, coordinatorNote = '') =>
   apiFetch('/approve', {
