@@ -26,17 +26,29 @@ export const getDashboardState = () => {
   return apiFetch('/dashboard');
 };
 
-export const approveItem = (approvalId, coordinatorNote = '') =>
-  apiFetch('/approve', {
+export const approveItem = (approvalId, coordinatorNote = '') => {
+  if (!BASE) {
+    const item = mockDashboardState.approvals.find(a => a.approval_id === approvalId);
+    if (item) item.status = 'approved';
+    return Promise.resolve({ success: true });
+  }
+  return apiFetch('/approve', {
     method: 'POST',
     body: JSON.stringify({ approval_id: approvalId, coordinator_note: coordinatorNote }),
   });
+};
 
-export const rejectItem = (approvalId, coordinatorNote = '') =>
-  apiFetch('/reject', {
+export const rejectItem = (approvalId, coordinatorNote = '') => {
+  if (!BASE) {
+    const item = mockDashboardState.approvals.find(a => a.approval_id === approvalId);
+    if (item) item.status = 'rejected';
+    return Promise.resolve({ success: true });
+  }
+  return apiFetch('/reject', {
     method: 'POST',
     body: JSON.stringify({ approval_id: approvalId, coordinator_note: coordinatorNote }),
   });
+};
 
 export const getReport = (fromDate, toDate, format = 'markdown') =>
   apiFetch(`/report?from=${fromDate}&to=${toDate}&format=${format}`);
