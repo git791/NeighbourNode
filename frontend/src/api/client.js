@@ -52,3 +52,24 @@ export const rejectItem = (approvalId, coordinatorNote = '') => {
 
 export const getReport = (fromDate, toDate, format = 'markdown') =>
   apiFetch(`/report?from=${fromDate}&to=${toDate}&format=${format}`);
+
+export const submitDonation = (donation) => {
+  if (!BASE) {
+    const newOffer = {
+      offer_id: `offer-${Date.now()}`,
+      donor_name: donation.donor_name,
+      food_type: donation.food_type,
+      quantity: donation.quantity,
+      fridge_id: donation.fridge_id,
+      notes: donation.notes,
+      status: 'open',
+      created_at: new Date().toISOString(),
+    };
+    mockDashboardState.offers.push(newOffer);
+    return Promise.resolve({ success: true, offer: newOffer });
+  }
+  return apiFetch('/offer', {
+    method: 'POST',
+    body: JSON.stringify(donation),
+  });
+};
