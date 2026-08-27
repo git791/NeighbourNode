@@ -73,3 +73,17 @@ export const submitDonation = (donation) => {
     body: JSON.stringify(donation),
   });
 };
+export const markFridgeEmpty = (fridgeId) => {
+  if (!BASE) {
+    const fridge = mockDashboardState.fridges.find(f => f.entity_id === fridgeId);
+    if (fridge) {
+      fridge.status = 'empty';
+      fridge.filled_count = 0;
+    }
+    return Promise.resolve({ success: true });
+  }
+  return apiFetch('/fridge/empty', {
+    method: 'POST',
+    body: JSON.stringify({ fridge_id: fridgeId }),
+  });
+};

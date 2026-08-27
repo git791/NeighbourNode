@@ -4,18 +4,24 @@ import { Queue } from './components/Queue.jsx';
 import { DataStrip } from './components/DataStrip.jsx';
 import { ReportModal } from './components/ReportModal.jsx';
 import { DonorForm } from './components/DonorForm.jsx';
+import { HostPage } from './components/HostPage.jsx';
 import { useDashboardState } from './hooks/useDashboardState.js';
-import { submitDonation } from './api/client.js';
+import { submitDonation, markFridgeEmpty } from './api/client.js';
 
 export default function App() {
   const { state, loading, error, refresh } = useDashboardState(15000);
   const [showReport, setShowReport] = useState(false);
-  const [view, setView] = useState('coordinator'); // 'coordinator' | 'donor'
+  const [view, setView] = useState('coordinator'); // 'coordinator' | 'donor' | 'host'
 
   const { fridges = [], offers = [], dispatches = [], approvals = [] } = state;
 
   const handleDonationSubmit = async (formData) => {
     await submitDonation(formData);
+    await refresh();
+  };
+
+  const handleMarkEmpty = async (fridgeId) => {
+    await markFridgeEmpty(fridgeId);
     await refresh();
   };
 
@@ -41,6 +47,13 @@ export default function App() {
           >
             Donor
           </button>
+          <button
+            className="btn"
+            onClick={() => setView('host')}
+            style={{ opacity: view === 'host' ? 1 : 0.5 }}
+          >
+            Host
+          </button>
           {loading && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-mono)', opacity: 0.7 }}>syncing…</span>}
           {error && <span style={{ color: 'var(--flag-red)', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-mono)' }}>⚠ {error}</span>}
           {view === 'coordinator' && (
@@ -55,7 +68,7 @@ export default function App() {
       {loading && <div className="loading-bar" role="progressbar" aria-label="Loading dashboard" />}
 
       {/* Main workspace */}
-      {view === 'coordinator' ? (
+      {view === 'coordinator' && (
         <>
           <main className="workspace">
             <div className="map-pane">
@@ -69,9 +82,17 @@ export default function App() {
           </main>
           <DataStrip fridges={fridges} dispatches={dispatches} offers={offers} />
         </>
-      ) : (
+      )}
+
+      {view === 'donor' && (
         <main className="workspace" style={{ display: 'block', padding: '2rem' }}>
           <DonorForm fridges={fridges} onSubmit={handleDonationSubmit} />
+        </main>
+      )}
+
+      {view === 'host' && (
+        <main className="workspace" style={{ display: 'block', padding: '2rem' }}>
+          <HostPage fridges={fridges} onMarkEmpty={handleMarkEmpty} />
         </main>
       )}
 
