@@ -1,0 +1,10 @@
+:root {
+  /* Earthen Spice Design Tokens */
+  --color-bg-base: #FAF6F0 ;      /* Cream Base */
+  --color-text-main: #2B2620;    /* Dark Earth Text */
+  --color-green-full: #2F6B4F;   /* Mossy Green (Stocked) */
+  --color-yellow-low: #E7A93C ;   /* Warm Ochre (Low) */
+  --color-red-empty: #E4531F;    /* Terracotta Red (Empty) */
+
+  --font-primary: 'Nunito', 'Inter', sans-serif;
+}
