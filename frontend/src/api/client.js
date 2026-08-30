@@ -87,3 +87,23 @@ export const markFridgeEmpty = (fridgeId) => {
     body: JSON.stringify({ fridge_id: fridgeId }),
   });
 };
+export const completeDelivery = (dispatchId) => {
+  if (!BASE) {
+    const dispatch = mockDashboardState.dispatches.find(d => d.dispatch_id === dispatchId);
+    if (dispatch) {
+      dispatch.status = 'completed';
+      // Restock the fridge a bit, since food was just delivered
+      const fridge = mockDashboardState.fridges.find(f => f.entity_id === dispatch.fridge_id);
+      if (fridge) {
+        fridge.filled_count = Math.min((fridge.filled_count || 0) + 1, fridge.capacity || 5);
+        fridge.status = fridge.filled_count >= (fridge.capacity || 5) ? 'stocked' : 'low';
+        fridge.last_restocked_at = new Date().toISOString();
+      }
+    }
+    return Promise.resolve({ success: true });
+  }
+  return apiFetch('/dispatch/complete', {
+    method: 'POST',
+    body: JSON.stringify({ dispatch_id: dispatchId }),
+  });
+};
