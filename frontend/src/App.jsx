@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Header } from './components/Header.jsx';
 import { Map } from './components/Map.jsx';
 import { Queue } from './components/Queue.jsx';
 import { DataStrip } from './components/DataStrip.jsx';
@@ -33,33 +34,13 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* Header */}
-      <header className="header">
-        <div className="header__logo">
-          Neighbor<span>Node</span>
-        </div>
-        <div className="header__actions">
-          <button className="btn" onClick={() => setView('coordinator')} style={{ opacity: view === 'coordinator' ? 1 : 0.5 }}>
-            Coordinator
-          </button>
-          <button className="btn" onClick={() => setView('donor')} style={{ opacity: view === 'donor' ? 1 : 0.5 }}>
-            Donor
-          </button>
-          <button className="btn" onClick={() => setView('host')} style={{ opacity: view === 'host' ? 1 : 0.5 }}>
-            Host
-          </button>
-          <button className="btn" onClick={() => setView('runner')} style={{ opacity: view === 'runner' ? 1 : 0.5 }}>
-            Runner
-          </button>
-          {loading && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-mono)', opacity: 0.7 }}>syncing…</span>}
-          {error && <span style={{ color: 'var(--flag-red)', fontFamily: 'var(--font-mono)', fontSize: 'var(--text-mono)' }}>⚠ {error}</span>}
-          {view === 'coordinator' && (
-            <button className="btn btn--report" onClick={() => setShowReport(true)} id="open-report-modal">
-              Report
-            </button>
-          )}
-        </div>
-      </header>
+      <Header
+        view={view}
+        setView={setView}
+        onOpenReport={() => setShowReport(true)}
+        loading={loading}
+        error={error}
+      />
 
       {/* Loading bar */}
       {loading && <div className="loading-bar" role="progressbar" aria-label="Loading dashboard" />}
