@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Package, Refrigerator, Bike } from 'lucide-react';
+import { Users, Package, Refrigerator, Bike, BarChart3 } from 'lucide-react';
 
 const ROLES = [
   { id: 'coordinator', label: 'Coordinator', icon: Users },
@@ -17,8 +17,11 @@ export function Header({ view, setView, onOpenReport, loading, error }) {
   return (
     <header className="header">
       <div className="header__left">
-        <div className="header__logo">
-          Neighbor<span>Node</span>
+        <div className="header__brand">
+          <div className="header__logo">
+            Neighbor<span className="header__logo-accent">Node</span>
+          </div>
+          <div className="header__tagline">No food waste, no empty stomachs.</div>
         </div>
       </div>
 
@@ -27,10 +30,7 @@ export function Header({ view, setView, onOpenReport, loading, error }) {
         {error && <span className="header__status header__status--error">⚠ {error}</span>}
 
         <div className="role-switcher">
-          <button
-            className="role-switcher__trigger"
-            onClick={() => setRoleMenuOpen((o) => !o)}
-          >
+          <button className="header-pill-btn" onClick={() => setRoleMenuOpen((o) => !o)}>
             <CurrentIcon size={16} />
             {currentRole.label}
             <span className="role-switcher__chevron">▾</span>
@@ -58,7 +58,8 @@ export function Header({ view, setView, onOpenReport, loading, error }) {
         </div>
 
         {view === 'coordinator' && (
-          <button className="btn btn--report" onClick={onOpenReport}>
+          <button className="header-pill-btn" onClick={onOpenReport}>
+            <BarChart3 size={16} />
             Report
           </button>
         )}

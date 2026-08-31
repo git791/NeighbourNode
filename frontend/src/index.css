@@ -66,27 +66,40 @@ body {
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
+/* ── Header ─────────────────────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--gap-sm) var(--gap-lg);
-  background: var(--chalkboard);
-  color: var(--enamel);
-  font-family: var(--font-display);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  background: var(--enamel);
+  color: var(--chalkboard);
+  border-bottom: 1px solid var(--enamel-dark);
 }
-.header__logo {
-  font-size: 1.25rem;
-  font-weight: 900;
-  color: var(--enamel);
-}
-.header__logo span { color: var(--crate-green); }
 .header__left {
   display: flex;
   align-items: center;
   gap: var(--gap-md);
+}
+.header__brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.header__logo {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--crate-green);
+}
+.header__logo-accent {
+  color: var(--marigold);
+}
+.header__tagline {
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--chalkboard-muted);
 }
 .header__actions { display: flex; gap: var(--gap-md); align-items: center; }
 .header__status {
@@ -99,11 +112,8 @@ body {
   opacity: 1;
 }
 
-/* ── Role switcher ──────────────────────────────────────────── */
-.role-switcher {
-  position: relative;
-}
-.role-switcher__trigger {
+/* ── Shared header pill button (role switcher + report) ───────── */
+.header-pill-btn {
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -111,17 +121,22 @@ body {
   font-size: var(--text-small);
   font-weight: 600;
   padding: 0.5rem 1rem;
-  border: 1px solid var(--enamel-dark);
+  border: 1.5px solid var(--crate-green);
   border-radius: 999px;
   background: white;
   color: var(--chalkboard);
   cursor: pointer;
   min-height: 2.5rem;
-  text-transform: none;
-  letter-spacing: normal;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.role-switcher__trigger:hover {
-  background: var(--enamel-dark);
+.header-pill-btn:hover {
+  background: var(--crate-green);
+  color: var(--chalkboard);
+}
+
+/* ── Role switcher ──────────────────────────────────────────── */
+.role-switcher {
+  position: relative;
 }
 .role-switcher__chevron {
   font-size: 0.7rem;
@@ -159,6 +174,7 @@ body {
   background: var(--crate-green);
   color: white;
 }
+
 
 /* ── Main workspace ─────────────────────────────────────────── */
 .workspace {
@@ -265,7 +281,12 @@ body {
 .btn:active { transform: scale(0.98); }
 .btn--approve { background: var(--crate-green); color: white; }
 .btn--reject { background: var(--enamel-dark); color: var(--chalkboard); border: 1px solid var(--chalkboard-muted); }
-.btn--report { background: var(--dispatch-blue); color: white; }
+.btn--report .btn--report {
+  background: var(--dispatch-blue);
+  color: white;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(30,36,32,0.15);
+}
 .btn--sm { padding: 0.25rem 0.75rem; min-height: 2rem; font-size: var(--text-mono); }
 
 /* ── Status badges ──────────────────────────────────────────── */
