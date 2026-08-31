@@ -1,5 +1,8 @@
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { Refrigerator } from 'lucide-react';
 import { FridgeCard } from './FridgeCard.jsx';
 
 const STATUS_COLORS = {
@@ -9,15 +12,35 @@ const STATUS_COLORS = {
   flagged: '#E4531F',
 };
 
-const STATUS_FILL_OPACITY = {
-  stocked: 1,
-  low: 0.6,
-  empty: 0,  // hollow ring
-  flagged: 0,
-};
+function createPinIcon(status) {
+  const color = STATUS_COLORS[status] || STATUS_COLORS.empty;
+
+  const iconMarkup = renderToStaticMarkup(
+    <div style={{ position: 'relative', width: '32px', height: '40px' }}>
+      <svg width="32" height="40" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M16 0C7.163 0 0 7.163 0 16C0 26 16 40 16 40C16 40 32 26 32 16C32 7.163 24.837 0 16 0Z"
+          fill={color}
+        />
+      </svg>
+      <Refrigerator
+        size={16}
+        color="white"
+        style={{ position: 'absolute', top: '8px', left: '8px' }}
+      />
+    </div>
+  );
+
+  return L.divIcon({
+    html: iconMarkup,
+    className: 'fridge-pin',
+    iconSize: [32, 40],
+    iconAnchor: [16, 40],
+    popupAnchor: [0, -40],
+  });
+}
 
 export function Map({ fridges = [] }) {
-  // Default center: Brooklyn, NYC
   const center = fridges.length > 0
     ? [
         fridges.reduce((s, f) => s + (f.lat || 40.68), 0) / fridges.length,
@@ -32,28 +55,19 @@ export function Map({ fridges = [] }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {fridges.map((fridge) => {
-        const status = fridge.status || 'empty';
-        const color = STATUS_COLORS[status] || STATUS_COLORS.empty;
-        const fillOpacity = STATUS_FILL_OPACITY[status] ?? 0;
-
         if (!fridge.lat || !fridge.lng) return null;
+        const status = fridge.status || 'empty';
 
         return (
-          <CircleMarker
+          <Marker
             key={fridge.entity_id || fridge.id}
-            center={[fridge.lat, fridge.lng]}
-            radius={12}
-            pathOptions={{
-              color: color,
-              weight: 3,
-              fillColor: color,
-              fillOpacity: fillOpacity,
-            }}
+            position={[fridge.lat, fridge.lng]}
+            icon={createPinIcon(status)}
           >
-            <Popup maxWidth={240} className="fridge-popup">
+            <Popup maxWidth={260} className="fridge-popup">
               <FridgeCard fridge={fridge} />
             </Popup>
-          </CircleMarker>
+          </Marker>
         );
       })}
     </MapContainer>
