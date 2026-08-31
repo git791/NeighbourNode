@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Header } from './components/Header.jsx';
 import { Map } from './components/Map.jsx';
+import { MapLegend } from './components/MapLegend.jsx';
 import { Queue } from './components/Queue.jsx';
 import { DataStrip } from './components/DataStrip.jsx';
 import { ReportModal } from './components/ReportModal.jsx';
@@ -51,6 +52,7 @@ export default function App() {
           <main className="workspace">
             <div className="map-pane">
               <Map fridges={fridges} />
+              <MapLegend />
             </div>
             <Queue approvals={approvals} dispatches={dispatches} onRefresh={refresh} />
           </main>
