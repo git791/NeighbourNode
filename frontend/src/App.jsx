@@ -6,6 +6,9 @@ import { Queue } from './components/Queue.jsx';
 import { DataStrip } from './components/DataStrip.jsx';
 import { ReportModal } from './components/ReportModal.jsx';
 import { DonorForm } from './components/DonorForm.jsx';
+import { DonorSuccess } from './components/DonorSuccess.jsx';
+import { Leaderboard } from './components/Leaderboard.jsx';
+import { DonorBanner } from './components/DonorBanner.jsx';
 import { HostPage } from './components/HostPage.jsx';
 import { RunnerPage } from './components/RunnerPage.jsx';
 import { useDashboardState } from './hooks/useDashboardState.js';
@@ -15,12 +18,14 @@ export default function App() {
   const { state, loading, error, refresh } = useDashboardState(15000);
   const [showReport, setShowReport] = useState(false);
   const [view, setView] = useState('coordinator'); // 'coordinator' | 'donor' | 'host' | 'runner'
+  const [donationJustLogged, setDonationJustLogged] = useState(false);
 
   const { fridges = [], offers = [], dispatches = [], approvals = [] } = state;
 
   const handleDonationSubmit = async (formData) => {
     await submitDonation(formData);
     await refresh();
+    setDonationJustLogged(true);
   };
 
   const handleMarkEmpty = async (fridgeId) => {
@@ -61,8 +66,20 @@ export default function App() {
       )}
 
       {view === 'donor' && (
-        <main className="workspace" style={{ display: 'block', padding: '2rem' }}>
-          <DonorForm fridges={fridges} onSubmit={handleDonationSubmit} />
+        <main className="donor-page">
+          <div className="donor-page__main">
+            {donationJustLogged ? (
+              <DonorSuccess onLogAnother={() => setDonationJustLogged(false)} />
+            ) : (
+              <DonorForm fridges={fridges} onSubmitSuccess={handleDonationSubmit} />
+            )}
+          </div>
+          <div className="donor-page__side">
+            <Leaderboard offers={offers} />
+          </div>
+          <div className="donor-page__banner">
+            <DonorBanner />
+          </div>
         </main>
       )}
 
