@@ -87,6 +87,20 @@ export const markFridgeEmpty = (fridgeId) => {
     body: JSON.stringify({ fridge_id: fridgeId }),
   });
 };
+export const markFridgeLow = (fridgeId) => {
+  if (!BASE) {
+    const fridge = mockDashboardState.fridges.find(f => f.entity_id === fridgeId);
+    if (fridge) {
+      fridge.status = 'low';
+      fridge.filled_count = Math.min(2, fridge.capacity || 5);
+    }
+    return Promise.resolve({ success: true });
+  }
+  return apiFetch('/fridge/low', {
+    method: 'POST',
+    body: JSON.stringify({ fridge_id: fridgeId }),
+  });
+};
 export const completeDelivery = (dispatchId) => {
   if (!BASE) {
     const dispatch = mockDashboardState.dispatches.find(d => d.dispatch_id === dispatchId);

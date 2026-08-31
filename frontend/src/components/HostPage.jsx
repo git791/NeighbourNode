@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { FridgeCard } from './FridgeCard.jsx';
+import { HostHeader } from './HostHeader.jsx';
+import { HostFridgeStatus } from './HostFridgeStatus.jsx';
+import { HostActionPanel } from './HostActionPanel.jsx';
+import { HostSidebar } from './HostSidebar.jsx';
+import { DonorBanner } from './DonorBanner.jsx';
 
-export function HostPage({ fridges = [], onMarkEmpty }) {
+export function HostPage({ fridges = [], onMarkEmpty, onMarkLow }) {
   const [selectedFridgeId, setSelectedFridgeId] = useState('');
   const [confirming, setConfirming] = useState(false);
 
@@ -13,43 +17,47 @@ export function HostPage({ fridges = [], onMarkEmpty }) {
     setConfirming(false);
   };
 
+  const handleMarkLow = async () => {
+    setConfirming(true);
+    await onMarkLow(selectedFridgeId);
+    setConfirming(false);
+  };
+
   return (
-    <div className="host-page">
-      <h2>My Fridge</h2>
+    <main className="host-page">
+      <div className="host-page__main">
+        <HostHeader />
 
-      <label>
-        Select your fridge
-        <select
-          value={selectedFridgeId}
-          onChange={(e) => setSelectedFridgeId(e.target.value)}
-        >
-          <option value="">Choose a fridge</option>
-          {fridges.map((f) => (
-            <option key={f.entity_id} value={f.entity_id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {selectedFridge && (
-        <div style={{ marginTop: '1.5rem', maxWidth: '320px' }}>
-          <FridgeCard fridge={selectedFridge} />
-
-          <button
-            className="btn btn--reject"
-            style={{ marginTop: '1rem' }}
-            onClick={handleMarkEmpty}
-            disabled={selectedFridge.status === 'empty' || confirming}
-          >
-            {confirming
-              ? 'Updating…'
-              : selectedFridge.status === 'empty'
-              ? 'Already marked empty'
-              : 'Mark as Empty'}
-          </button>
+        <div className="host-fridge-select">
+          <label>
+            Select your fridge
+            <select value={selectedFridgeId} onChange={(e) => setSelectedFridgeId(e.target.value)}>
+              <option value="">Choose a fridge</option>
+              {fridges.map((f) => (
+                <option key={f.entity_id} value={f.entity_id}>{f.name}</option>
+              ))}
+            </select>
+          </label>
         </div>
-      )}
-    </div>
+
+        {selectedFridge && (
+          <>
+            <HostFridgeStatus fridge={selectedFridge} />
+            <HostActionPanel
+              fridge={selectedFridge}
+              onMarkEmpty={handleMarkEmpty}
+              onMarkLow={handleMarkLow}
+              confirming={confirming}
+            />
+          </>
+        )}
+
+        <DonorBanner />
+      </div>
+
+      <div className="host-page__side">
+        <HostSidebar />
+      </div>
+    </main>
   );
 }
