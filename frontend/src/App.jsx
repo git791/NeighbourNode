@@ -12,8 +12,7 @@ import { DonorBanner } from './components/DonorBanner.jsx';
 import { HostPage } from './components/HostPage.jsx';
 import { RunnerPage } from './components/RunnerPage.jsx';
 import { useDashboardState } from './hooks/useDashboardState.js';
-import { submitDonation, markFridgeEmpty, completeDelivery } from './api/client.js';
-
+import { submitDonation, markFridgeEmpty, markFridgeLow, completeDelivery } from './api/client.js';
 export default function App() {
   const { state, loading, error, refresh } = useDashboardState(15000);
   const [showReport, setShowReport] = useState(false);
@@ -31,6 +30,10 @@ export default function App() {
   const handleMarkEmpty = async (fridgeId) => {
     await markFridgeEmpty(fridgeId);
     await refresh();
+  };
+  const handleMarkLow = async (fridgeId) => {
+  await markFridgeLow(fridgeId);
+  await refresh();
   };
 
   const handleCompleteDelivery = async (dispatchId) => {
@@ -84,9 +87,7 @@ export default function App() {
       )}
 
       {view === 'host' && (
-        <main className="workspace" style={{ display: 'block', padding: '2rem' }}>
-          <HostPage fridges={fridges} onMarkEmpty={handleMarkEmpty} />
-        </main>
+        <HostPage fridges={fridges} onMarkEmpty={handleMarkEmpty} onMarkLow={handleMarkLow} />
       )}
 
       {view === 'runner' && (
