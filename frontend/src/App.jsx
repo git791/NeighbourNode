@@ -91,10 +91,13 @@ export default function App() {
       )}
 
       {view === 'runner' && (
-        <main className="workspace" style={{ display: 'block', padding: '2rem' }}>
-          <RunnerPage dispatches={dispatches} fridges={fridges} onComplete={handleCompleteDelivery} />
-        </main>
-      )}
+  <RunnerPage
+    dispatches={dispatches}
+    fridges={fridges}
+    offers={offers}
+    onComplete={handleCompleteDelivery}
+  />
+)}
 
       {/* Report modal */}
       {showReport && <ReportModal onClose={() => setShowReport(false)} />}
