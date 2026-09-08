@@ -153,6 +153,41 @@ Resources:
             Method: POST
             ApiId: !Ref NeighborNodeApi
 
+  ActionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda/action_handler.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Description: Handles web app actions (offer, fridge status, dispatch)
+      Environment:
+        Variables:
+          FOOD_SAFETY_EXCLUSION_LIST: config/food_safety_exclusions.json
+      Events:
+        PostOffer:
+          Type: HttpApi
+          Properties:
+            Path: /offer
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+        FridgeEmpty:
+          Type: HttpApi
+          Properties:
+            Path: /fridge/empty
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+        FridgeLow:
+          Type: HttpApi
+          Properties:
+            Path: /fridge/low
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+        DispatchComplete:
+          Type: HttpApi
+          Properties:
+            Path: /dispatch/complete
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+
   SchedulerFunction:
     Type: AWS::Serverless::Function
     Properties:
