@@ -1445,7 +1445,7 @@ body {
   margin-bottom: var(--gap-lg);
 }
 
- {
+.login-page__illustration {
   height: 260px;
   background: white;
   border-radius: 16px;
