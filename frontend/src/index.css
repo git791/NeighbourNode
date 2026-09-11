@@ -1477,7 +1477,7 @@ body {
   padding: var(--gap-xl);
 }
 .login-page__card {
-  backg.login-page__illustrationround: white;
+  background: white;
   border-radius: 20px;
   padding: var(--gap-xl);
   width: 100%;
