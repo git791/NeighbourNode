@@ -101,6 +101,22 @@ export const markFridgeLow = (fridgeId) => {
     body: JSON.stringify({ fridge_id: fridgeId }),
   });
 };
+export const updateFridgeCount = (fridgeId, count) => {
+  if (!BASE) {
+    const fridge = mockDashboardState.fridges.find(f => f.entity_id === fridgeId);
+    if (fridge) {
+      fridge.filled_count = count;
+      if (count === 0) fridge.status = 'empty';
+      else if (count <= 2) fridge.status = 'low';
+      else fridge.status = 'stocked';
+    }
+    return Promise.resolve({ success: true });
+  }
+  return apiFetch('/fridge/update', {
+    method: 'POST',
+    body: JSON.stringify({ fridge_id: fridgeId, count, user: 'Host' }),
+  });
+};
 export const completeDelivery = (dispatchId) => {
   if (!BASE) {
     const dispatch = mockDashboardState.dispatches.find(d => d.dispatch_id === dispatchId);

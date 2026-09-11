@@ -4,7 +4,8 @@ Description: NeighborNode — autonomous agent network for community fridge oper
 
 Globals:
   Function:
-    Runtime: python3.11
+    CodeUri: build_output/
+    Runtime: python3.13
     Timeout: 300          # Agent chains can take up to 5 minutes
     MemorySize: 512
     Environment:
@@ -179,6 +180,12 @@ Resources:
           Type: HttpApi
           Properties:
             Path: /fridge/low
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+        FridgeUpdate:
+          Type: HttpApi
+          Properties:
+            Path: /fridge/update
             Method: POST
             ApiId: !Ref NeighborNodeApi
         DispatchComplete:

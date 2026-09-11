@@ -13,7 +13,7 @@ import { DonorBanner } from './components/DonorBanner.jsx';
 import { HostPage } from './components/HostPage.jsx';
 import { RunnerPage } from './components/RunnerPage.jsx';
 import { useDashboardState } from './hooks/useDashboardState.js';
-import { submitDonation, markFridgeEmpty, markFridgeLow, completeDelivery } from './api/client.js';
+import { submitDonation, markFridgeEmpty, markFridgeLow, completeDelivery, updateFridgeCount } from './api/client.js';
 
 export default function App() {
   const { state, loading, error, refresh } = useDashboardState(15000);
@@ -37,6 +37,11 @@ export default function App() {
 
   const handleMarkLow = async (fridgeId) => {
     await markFridgeLow(fridgeId);
+    await refresh();
+  };
+
+  const handleUpdateCount = async (fridgeId, count) => {
+    await updateFridgeCount(fridgeId, count);
     await refresh();
   };
 
@@ -102,7 +107,12 @@ export default function App() {
       )}
 
       {view === 'host' && (
-        <HostPage fridges={fridges} onMarkEmpty={handleMarkEmpty} onMarkLow={handleMarkLow} />
+        <HostPage 
+          fridges={fridges} 
+          onMarkEmpty={handleMarkEmpty} 
+          onMarkLow={handleMarkLow} 
+          onUpdateCount={handleUpdateCount} 
+        />
       )}
 
       {view === 'runner' && (

@@ -5,7 +5,7 @@ import { HostActionPanel } from './HostActionPanel.jsx';
 import { HostSidebar } from './HostSidebar.jsx';
 import { DonorBanner } from './DonorBanner.jsx';
 
-export function HostPage({ fridges = [], onMarkEmpty, onMarkLow }) {
+export function HostPage({ fridges = [], onMarkEmpty, onMarkLow, onUpdateCount }) {
   const [selectedFridgeId, setSelectedFridgeId] = useState('');
   const [confirming, setConfirming] = useState(false);
 
@@ -20,6 +20,12 @@ export function HostPage({ fridges = [], onMarkEmpty, onMarkLow }) {
   const handleMarkLow = async () => {
     setConfirming(true);
     await onMarkLow(selectedFridgeId);
+    setConfirming(false);
+  };
+
+  const handleUpdateCount = async (count) => {
+    setConfirming(true);
+    await onUpdateCount(selectedFridgeId, count);
     setConfirming(false);
   };
 
@@ -47,6 +53,7 @@ export function HostPage({ fridges = [], onMarkEmpty, onMarkLow }) {
               fridge={selectedFridge}
               onMarkEmpty={handleMarkEmpty}
               onMarkLow={handleMarkLow}
+              onUpdateCount={handleUpdateCount}
               confirming={confirming}
             />
           </>

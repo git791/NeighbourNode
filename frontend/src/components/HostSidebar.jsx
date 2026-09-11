@@ -27,7 +27,10 @@ export function HostSidebar() {
             <span>{tip.text}</span>
           </div>
         ))}
-        <button className="host-sidebar__contact">
+        <button 
+          className="host-sidebar__contact" 
+          onClick={() => alert("Simulation: Opening native SMS app to text Coordinator at +12125551234")}
+        >
           <MessageCircle size={15} /> Contact Coordinator
         </button>
       </div>
