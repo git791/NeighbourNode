@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getDashboardState } from '../api/client.js';
 
 export function useDashboardState(pollIntervalMs = 15000) {
-  const [state, setState] = useState({ fridges: [], offers: [], dispatches: [], approvals: [] });
+  const [state, setState] = useState({ fridges: [], offers: [], dispatches: [], approvals: [], forecasts: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 

@@ -6,6 +6,7 @@ from geopy.distance import geodesic
 import boto3
 from neighbornode.config import settings
 from neighbornode.db import scan_by_status, get_item, put_item
+from neighbornode.skills.shared import log_event
 
 @tool
 def check_safety_exclusion(food_type: str, notes: str = "") -> dict:
@@ -139,7 +140,120 @@ def queue_for_approval(item_type: str, item_id: str, reason: str, context: dict 
         "created_at": ts
     })
     
-    if settings.coordinator_phone:
-        send_sms(settings.coordinator_phone, f"Approval needed for {item_type} {item_id}: {reason}")
+    if settings.coordinator_phone and settings.pinpoint_app_id:
+        try:
+            import boto3
+            client = boto3.client("pinpoint", region_name=settings.aws_region)
+            client.send_messages(
+                ApplicationId=settings.pinpoint_app_id,
+                MessageRequest={
+                    "Addresses": {settings.coordinator_phone: {"ChannelType": "SMS"}},
+                    "MessageConfiguration": {
+                        "SMSMessage": {
+                            "Body": f"[NeighborNode] Approval needed for {item_type} {item_id}: {reason}",
+                            "MessageType": "TRANSACTIONAL",
+                            "OriginationNumber": settings.pinpoint_origination_number,
+                        }
+                    },
+                },
+            )
+        except Exception as notify_err:
+            from neighbornode.config import logger
+            logger.warning(f"Coordinator notification failed: {notify_err}")
         
     return {"approval_id": app_id, "queued": True}
+
+
+@tool
+def retry_dispatch(dispatch_id: str, declined_runner_id: str, attempt: int = 1) -> dict:
+    """Handle a runner declining a dispatch. Auto-retry up to 3 runners; queue for coordinator after 3 failures."""
+    MAX_ATTEMPTS = 3
+    from neighbornode.db import get_item, update_item_attr, get_table
+    from boto3.dynamodb.conditions import Attr
+
+    dispatch = get_item(f"DISPATCH#{dispatch_id}", "META")
+    if not dispatch:
+        return {"error": f"Dispatch {dispatch_id} not found"}
+
+    # Mark current runner as declined
+    update_item_attr(f"DISPATCH#{dispatch_id}", "META", "status", "runner_declined")
+    update_item_attr(f"RUNNER#{declined_runner_id}", "META", "active_dispatch_id", None)
+
+    log_event(
+        entity_id=f"DISPATCH#{dispatch_id}",
+        event_type="runner_declined",
+        payload={"declined_runner_id": declined_runner_id, "attempt": attempt},
+    )
+
+    if attempt >= MAX_ATTEMPTS:
+        # All 3 runners declined — surface to coordinator
+        queue_for_approval(
+            item_type="dispatch",
+            item_id=dispatch_id,
+            reason=f"All {MAX_ATTEMPTS} nearest runners declined. Manual assignment required.",
+            context=dispatch,
+        )
+        return {"status": "queued_for_coordinator", "attempts": attempt}
+
+    # Find the next nearest available runner, excluding already-tried runners
+    tried = dispatch.get("tried_runners", [])
+    if declined_runner_id not in tried:
+        tried.append(declined_runner_id)
+    update_item_attr(f"DISPATCH#{dispatch_id}", "META", "tried_runners", tried)
+
+    fridge = get_item(dispatch.get("fridge_id", ""), "META")
+    f_lat = fridge.get("lat", 0) if fridge else 0
+    f_lng = fridge.get("lng", 0) if fridge else 0
+
+    runners = scan_by_status("RUNNER", "available")
+    valid_runners = [
+        r for r in runners
+        if r.get("active_dispatch_id") in [None, "null", ""]
+        and r.get("entity_id") not in tried
+        and r.get("PK", "").replace("RUNNER#", "") not in tried
+    ]
+
+    if not valid_runners:
+        queue_for_approval(
+            item_type="dispatch",
+            item_id=dispatch_id,
+            reason="No more available runners. Manual assignment required.",
+            context=dispatch,
+        )
+        return {"status": "queued_for_coordinator", "reason": "no_runners"}
+
+    best_runner = min(
+        valid_runners,
+        key=lambda r: geodesic((f_lat, f_lng), (r.get("lat", 0), r.get("lng", 0))).km
+        if r.get("lat") and r.get("lng") else float("inf")
+    )
+
+    runner_id = best_runner.get("entity_id") or best_runner["PK"].replace("RUNNER#", "")
+    offer_id = dispatch.get("offer_id", "")
+    fridge_id = dispatch.get("fridge_id", "").replace("FRIDGE#", "")
+
+    manifest = build_manifest(offer_id=offer_id, fridge_id=fridge_id, runner_id=runner_id)
+    if manifest.get("error"):
+        return {"error": manifest["error"]}
+
+    runner_phone = best_runner.get("phone", "")
+    sms_result = send_sms(to_phone=runner_phone, message=manifest["sms_text"])
+
+    # Update dispatch record with new runner and attempt count
+    update_item_attr(f"DISPATCH#{dispatch_id}", "META", "runner_id", runner_id)
+    update_item_attr(f"DISPATCH#{dispatch_id}", "META", "status", "pending")
+    update_item_attr(f"DISPATCH#{dispatch_id}", "META", "attempt", attempt + 1)
+    update_item_attr(f"RUNNER#{runner_id}", "META", "active_dispatch_id", dispatch_id)
+
+    log_event(
+        entity_id=f"DISPATCH#{dispatch_id}",
+        event_type="runner_reassigned",
+        payload={"new_runner_id": runner_id, "attempt": attempt + 1, "sms_sent": sms_result.get("success")},
+    )
+
+    return {
+        "status": "reassigned",
+        "new_runner_id": runner_id,
+        "attempt": attempt + 1,
+        "sms_sent": sms_result.get("success"),
+    }

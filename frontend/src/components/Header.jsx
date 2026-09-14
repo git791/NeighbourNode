@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Package, Refrigerator, Bike, BarChart3 } from 'lucide-react';
+import { Users, Package, Refrigerator, Bike, BarChart3, LogOut } from 'lucide-react';
 
 const ROLES = [
   { id: 'coordinator', label: 'Coordinator', icon: Users },
@@ -8,7 +8,7 @@ const ROLES = [
   { id: 'runner', label: 'Runner', icon: Bike },
 ];
 
-export function Header({ view, setView, onOpenReport, loading, error }) {
+export function Header({ view, setView, onOpenReport, loading, error, profile, onSignOut }) {
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
 
   const currentRole = ROLES.find((r) => r.id === view) || ROLES[0];
@@ -63,7 +63,23 @@ export function Header({ view, setView, onOpenReport, loading, error }) {
             Report
           </button>
         )}
+
+        {/* Profile chip */}
+        {profile && (
+          <div className="header__profile">
+            <span className="header__profile-name">{profile.display_name || profile.email}</span>
+            {onSignOut && (
+              <button
+                className="header-pill-btn header-pill-btn--ghost"
+                onClick={onSignOut}
+                title="Sign out"
+              >
+                <LogOut size={14} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );
-}
+}

@@ -23,15 +23,19 @@ Parameters:
   PinpointAppId:
     Type: String
     Description: Amazon Pinpoint Application ID for SMS
-    Default: ""
+    Default: "mock1234567890123456789012345678"
   PinpointOriginationNumber:
     Type: String
     Description: E.164 phone number for SMS origination
-    Default: ""
+    Default: "+10000000000"
   CoordinatorPhone:
     Type: String
     Description: E.164 phone number for Coordinator approval notifications
     Default: ""
+  CognitoCallbackUrl:
+    Type: String
+    Description: Frontend URL for Cognito hosted UI callback (e.g. https://your-cloudfront-domain.cloudfront.net)
+    Default: "http://localhost:5173"
 
 Resources:
   NeighborNodeTable:
@@ -53,6 +57,148 @@ Resources:
         AttributeName: ttl
         Enabled: true
 
+  # ── Cognito Auth ───────────────────────────────────────────────────────────
+  # One User Pool per role group. All free-tier eligible.
+  # Self-service sign-up is enabled for Host, Donor, and Runner.
+  # Coordinator is admin-invite-only (PreSignUp trigger blocks self-registration).
+
+  NeighborNodeUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: NeighborNodeUserPool
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: role
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: display_name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: transport         # for runners: bicycle, car, etc.
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: phone_number
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
+      UserPoolTags:
+        Project: NeighborNode
+
+  NeighborNodeUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: NeighborNodeWebApp
+      UserPoolId: !Ref NeighborNodeUserPool
+      GenerateSecret: false            # SPA — no client secret
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH   # for local dev convenience
+      CallbackURLs:
+        - !Ref CognitoCallbackUrl
+      LogoutURLs:
+        - !Ref CognitoCallbackUrl
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+      AllowedOAuthFlowsUserPoolClient: true
+      PreventUserExistenceErrors: ENABLED
+      ReadAttributes:
+        - email
+        - custom:role
+        - custom:display_name
+        - custom:transport
+        - phone_number
+      WriteAttributes:
+        - custom:role
+        - custom:display_name
+        - custom:transport
+        - phone_number
+
+  NeighborNodeUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub "neighbornode-${AWS::AccountId}"
+      UserPoolId: !Ref NeighborNodeUserPool
+
+  # ── /auth Lambda — register, confirm, sign-in, profile, sign-out ──────────
+
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda/auth_handler.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Description: Cognito-backed auth — register, confirm, sign-in, profile, sign-out
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Ref NeighborNodeUserPool
+          COGNITO_CLIENT_ID: !GetAtt NeighborNodeUserPoolClient.ClientId
+      Events:
+        Register:
+          Type: HttpApi
+          Properties:
+            Path: /auth/register
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+        Confirm:
+          Type: HttpApi
+          Properties:
+            Path: /auth/confirm
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+        SignIn:
+          Type: HttpApi
+          Properties:
+            Path: /auth/signin
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+        GetProfile:
+          Type: HttpApi
+          Properties:
+            Path: /auth/profile
+            Method: GET
+            ApiId: !Ref NeighborNodeApi
+        UpdateProfile:
+          Type: HttpApi
+          Properties:
+            Path: /auth/profile
+            Method: PUT
+            ApiId: !Ref NeighborNodeApi
+        SignOut:
+          Type: HttpApi
+          Properties:
+            Path: /auth/signout
+            Method: POST
+            ApiId: !Ref NeighborNodeApi
+
+  PdfLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: NeighborNodePdfLayer
+      Description: reportlab + markdown2 for PDF report generation
+      ContentUri: layer/
+      CompatibleRuntimes:
+        - python3.13
+      RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: python3.13
+
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -71,6 +217,7 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+
               - Effect: Allow
                 Action:
                   - dynamodb:GetItem
@@ -88,7 +235,20 @@ Resources:
               - Effect: Allow
                 Action:
                   - mobiletargeting:SendMessages
-                Resource: !Sub "arn:aws:mobiletargeting:${AWS::Region}:${AWS::AccountId}:apps/${PinpointAppId}/messages"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - cognito-idp:AdminInitiateAuth
+                  - cognito-idp:AdminCreateUser
+                  - cognito-idp:AdminSetUserPassword
+                  - cognito-idp:AdminGetUser
+                  - cognito-idp:AdminUpdateUserAttributes
+                  - cognito-idp:AdminUserGlobalSignOut
+                  - cognito-idp:SignUp
+                  - cognito-idp:ConfirmSignUp
+                  - cognito-idp:InitiateAuth
+                  - cognito-idp:GetUser
+                Resource: "*"
 
   WebhookFunction:
     Type: AWS::Serverless::Function
@@ -115,6 +275,8 @@ Resources:
       Handler: lambda/dashboard_handler.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Description: Returns live dashboard state for the coordinator frontend
+      Layers:
+        - !Ref PdfLayer
       Events:
         GetDashboard:
           Type: HttpApi
@@ -235,3 +397,21 @@ Outputs:
     Value: !Ref NeighborNodeTable
     Export:
       Name: NeighborNodeTableName
+
+  CognitoUserPoolId:
+    Description: "Cognito User Pool ID — copy to frontend/.env.local as VITE_COGNITO_USER_POOL_ID"
+    Value: !Ref NeighborNodeUserPool
+    Export:
+      Name: NeighborNodeUserPoolId
+
+  CognitoClientId:
+    Description: "Cognito App Client ID — copy to frontend/.env.local as VITE_COGNITO_CLIENT_ID"
+    Value: !GetAtt NeighborNodeUserPoolClient.ClientId
+    Export:
+      Name: NeighborNodeClientId
+
+  CognitoHostedUiUrl:
+    Description: "Cognito Hosted UI base URL (for OAuth flows)"
+    Value: !Sub "https://neighbornode-${AWS::AccountId}.auth.${AWS::Region}.amazoncognito.com"
+    Export:
+      Name: NeighborNodeHostedUiUrl

@@ -21,7 +21,7 @@ def handler(event, context):
 
         fridges = []
         for status in ("stocked", "low", "empty"):
-            fridges.extend(scan_by_status("FRIDGE#", status))
+            fridges.extend(scan_by_status("FRIDGE", status))
 
         logger.info(f"Running forecast for {len(fridges)} fridges")
 

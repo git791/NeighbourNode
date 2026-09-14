@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LoginPage } from './components/LoginPage.jsx';
 import { Header } from './components/Header.jsx';
 import { Map } from './components/Map.jsx';
@@ -14,15 +14,36 @@ import { HostPage } from './components/HostPage.jsx';
 import { RunnerPage } from './components/RunnerPage.jsx';
 import { useDashboardState } from './hooks/useDashboardState.js';
 import { submitDonation, markFridgeEmpty, markFridgeLow, completeDelivery, updateFridgeCount } from './api/client.js';
+import { getStoredProfile, signOut } from './api/auth.js';
 
 export default function App() {
   const { state, loading, error, refresh } = useDashboardState(15000);
   const [showReport, setShowReport] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [view, setView] = useState('coordinator'); // 'coordinator' | 'donor' | 'host' | 'runner'
+  const [profile, setProfile] = useState(null);   // {role, display_name, email, sub}
+  const [view, setView] = useState('coordinator');
   const [donationJustLogged, setDonationJustLogged] = useState(false);
 
-  const { fridges = [], offers = [], dispatches = [], approvals = [] } = state;
+  // Restore session from localStorage on first load
+  useEffect(() => {
+    const stored = getStoredProfile();
+    if (stored) {
+      setProfile(stored);
+      setView(stored.role || 'coordinator');
+    }
+  }, []);
+
+  const { fridges = [], offers = [], dispatches = [], approvals = [], forecasts = [] } = state;
+
+  const handleLogin = (p) => {
+    setProfile(p);
+    setView(p.role || 'coordinator');
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setProfile(null);
+    setView('coordinator');
+  };
 
   const handleDonationSubmit = async (formData) => {
     await submitDonation(formData);
@@ -50,15 +71,8 @@ export default function App() {
     await refresh();
   };
 
-  if (!loggedIn) {
-    return (
-      <LoginPage
-        onLogin={(role) => {
-          setView(role);
-          setLoggedIn(true);
-        }}
-      />
-    );
+  if (!profile) {
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   return (
@@ -69,6 +83,8 @@ export default function App() {
         onOpenReport={() => setShowReport(true)}
         loading={loading}
         error={error}
+        profile={profile}
+        onSignOut={handleSignOut}
       />
 
       {/* Loading bar */}

@@ -77,9 +77,29 @@ export const mockApprovals = [
   },
 ];
 
+export const mockForecasts = [
+  {
+    PK: 'FORECAST#fridge-002',
+    SK: '2026-08-20T08:00:00Z',
+    fridge_id: 'fridge-002',
+    predicted_empty_within_hours: 6,
+    confidence: 0.7,
+    reasoning: 'Based on 8 historical empty events, this fridge goes empty every ~48h on average.',
+  },
+  {
+    PK: 'FORECAST#fridge-003',
+    SK: '2026-08-20T08:00:00Z',
+    fridge_id: 'fridge-003',
+    predicted_empty_within_hours: 2,
+    confidence: 0.8,
+    reasoning: 'Already empty — dispatch pending.',
+  },
+];
+
 export const mockDashboardState = {
   fridges: mockFridges,
   offers: mockOffers,
   dispatches: mockDispatches,
   approvals: mockApprovals,
+  forecasts: mockForecasts,
 };

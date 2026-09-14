@@ -56,3 +56,6 @@ desktop.ini
 *.swo
 *.sublime-project
 *.sublime-workspace
+
+# Lambda Layer build output
+layer/
