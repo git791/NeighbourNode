@@ -1,6 +1,6 @@
 from strands.tools import tool
 import datetime
-from neighbornode.db import query_pk
+from neighbornode.db import query_pk, put_item
 
 @tool
 def get_status_history(fridge_id: str, days: int = 30) -> dict:
@@ -12,32 +12,46 @@ def get_status_history(fridge_id: str, days: int = 30) -> dict:
 
 @tool
 def predict_empty_window(fridge_id: str) -> dict:
-    """Predict when a fridge will go empty based on its history."""
+    """Predict when a fridge will go empty based on its history and persist the result to DynamoDB."""
     history = get_status_history(fridge_id, 30)
     events = history["events"]
-    
+
     empty_events = [e for e in events if e.get("event_type") == "status_update" and e.get("status") == "empty"]
+    ts = datetime.datetime.utcnow().isoformat() + "Z"
+
     if len(empty_events) < 5:
-        return {
+        result = {
             "fridge_id": fridge_id,
             "predicted_empty_within_hours": None,
             "confidence": 0.2,
-            "reasoning": "Insufficient data to make a reliable prediction (<5 empty events)."
+            "reasoning": "Insufficient data to make a reliable prediction (<5 empty events).",
         }
-    
-    empty_events.sort(key=lambda x: x["timestamp"])
-    intervals = []
-    for i in range(1, len(empty_events)):
-        t1 = datetime.datetime.fromisoformat(empty_events[i-1]["timestamp"].replace("Z", "+00:00"))
-        t2 = datetime.datetime.fromisoformat(empty_events[i]["timestamp"].replace("Z", "+00:00"))
-        intervals.append((t2 - t1).total_seconds())
-        
-    avg_seconds = sum(intervals) / len(intervals)
-    avg_hours = avg_seconds / 3600
-    
-    return {
-        "fridge_id": fridge_id,
-        "predicted_empty_within_hours": avg_hours,
-        "confidence": min(0.8, len(empty_events) * 0.1),
-        "reasoning": f"Based on {len(empty_events)} historical empty events, the fridge goes empty every {avg_hours:.1f} hours on average."
-    }
+    else:
+        empty_events.sort(key=lambda x: x["timestamp"])
+        intervals = []
+        for i in range(1, len(empty_events)):
+            t1 = datetime.datetime.fromisoformat(empty_events[i - 1]["timestamp"].replace("Z", "+00:00"))
+            t2 = datetime.datetime.fromisoformat(empty_events[i]["timestamp"].replace("Z", "+00:00"))
+            intervals.append((t2 - t1).total_seconds())
+
+        avg_seconds = sum(intervals) / len(intervals)
+        avg_hours = avg_seconds / 3600
+
+        result = {
+            "fridge_id": fridge_id,
+            "predicted_empty_within_hours": round(avg_hours, 1),
+            "confidence": min(0.8, len(empty_events) * 0.1),
+            "reasoning": f"Based on {len(empty_events)} historical empty events, the fridge goes empty every {avg_hours:.1f} hours on average.",
+        }
+
+    # Persist the prediction so the dashboard can read it via get_dashboard_state()
+    try:
+        put_item({
+            "PK": f"FORECAST#{fridge_id}",
+            "SK": ts,
+            **result,
+        })
+    except Exception:
+        pass  # Best-effort; a write failure should not break the agent chain
+
+    return result

@@ -126,6 +126,7 @@ Resources:
         - custom:transport
         - phone_number
       WriteAttributes:
+        - email
         - custom:role
         - custom:display_name
         - custom:transport

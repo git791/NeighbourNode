@@ -11,13 +11,14 @@ import json
 import logging
 import sys
 from pathlib import Path
+from decimal import Decimal
 
 from neighbornode.config import settings, logger
 from neighbornode.db import put_item
 
 def seed_dynamodb(seed_path: str) -> None:
     """Write all seed entities to real DynamoDB."""
-    data = json.loads(Path(seed_path).read_text())
+    data = json.loads(Path(seed_path).read_text(), parse_float=Decimal)
     import datetime
     
     for fridge in data.get("fridges", []):

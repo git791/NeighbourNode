@@ -81,8 +81,8 @@ def _get_user_progress(sub: str) -> dict:
         from neighbornode.db import get_item
         item = get_item(f"USER#{sub}", "META") or {}
         return {
-            "donation_count": int(item.get("donation_count", 0)),
-            "delivery_count": int(item.get("delivery_count", 0)),
+            "donation_count": item.get("donation_count", 0),
+            "delivery_count": item.get("delivery_count", 0),
             "joined_at": item.get("joined_at"),
         }
     except Exception:

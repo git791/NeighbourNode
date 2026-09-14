@@ -89,6 +89,25 @@ Frontend (React + Vite)
 
 Deployed via **AWS SAM** (`template.yaml`); models served through **Amazon Bedrock (Nova Micro / Nova Lite)**; optional runtime deployment via **Amazon Bedrock AgentCore Runtime**; messaging via **Amazon Pinpoint SMS**; storage via **DynamoDB single-table**; compute via **Lambda + EventBridge Scheduler**; frontend hosting via **S3 + CloudFront**.
 
+### AWS services breakdown
+
+| AWS Service | Specific role in NeighborNode |
+|---|---|
+| **Amazon Bedrock (Nova Lite)** | Powers Orchestrator (LLM routing), Match Agent (close-tie judgment), Dispatch Agent (manifest building), and Report Agent (narrative synthesis) via `bedrock.converse()` API. |
+| **Amazon Bedrock (Nova Micro)** | Powers Intake Agent (message classification, entity resolution, Spanish translation) and Forecast Agent (history analysis) — lower token cost for structured tasks. |
+| **Amazon Bedrock AgentCore Runtime** | Optional production runtime hosting Orchestrator session with persistent memory and session management via `AgentCoreClient`. |
+| **AgentCore Memory** | Uses `SEMANTIC` and `SUMMARIZATION` strategies to maintain context (e.g. tracking previously evaluated offers per fridge to prevent duplicate dispatches). |
+| **AgentCore Observability** | Traces every agent decision, tool call, and model inference in CloudWatch. |
+| **AWS Lambda** | 6 serverless Python 3.13 functions: `WebhookFunction`, `ActionFunction`, `ApprovalFunction`, `DashboardFunction`, `AuthFunction`, `SchedulerFunction`. |
+| **Amazon API Gateway (HTTP API)** | Central HTTP API backing all REST endpoints (`/inbound`, `/offer`, `/fridge/*`, `/approve`, `/reject`, `/dashboard`, `/report`, `/auth/*`). |
+| **Amazon DynamoDB** | Single-table design (`NeighborNodeTable`), `PAY_PER_REQUEST` billing. Manages all 10 entity types (`FRIDGE#`, `DONOR#`, `OFFER#`, `RUNNER#`, `DISPATCH#`, `APPROVAL#`, `FORECAST#`, `USER#`, `REPORT#`, `EVENT#`). |
+| **Amazon Pinpoint SMS** | Handles outbound SMS notifications for Runner dispatch manifests and Coordinator approval alerts via `mobiletargeting:SendMessages`. |
+| **Amazon EventBridge Scheduler** | Fires `SchedulerFunction` every 2 hours (`rate(2 hours)`), triggering the Forecast Agent across all active fridges. |
+| **Amazon Cognito** | User Pool & Client handling authentication for 4 roles (`coordinator`, `host`, `donor`, `runner`), with custom attributes (`custom:role`, `custom:display_name`, `custom:transport`). |
+| **Amazon S3 + CloudFront** | Static site hosting and CDN distribution for the React Coordinator dashboard. |
+| **AWS X-Ray** | Active tracing across all Lambda functions with Strands OpenTelemetry hooks for CloudWatch logs. |
+| **AWS SAM (CloudFormation)** | Single IaC template (`template.yaml`) defining all 15 resources, IAM roles, and a custom Lambda Layer for PDF rendering (`reportlab` + `markdown2`). |
+
 ---
 
 ## Agent system — how the five agents wire together
@@ -458,5 +477,11 @@ MIT — see `LICENSE`.
 
 ## Team / hackathon submission notes
 
+**Team Members:**
+- Mohammed Ayaan Adil Ahmed
+- Syed Aatira Zaffar Andrabi
+- Wania Qamar
+
 Built during the Agents for Humans Hackathon submission window (Aug 10 – Sep 14, 2026).  
 Track: Good Neighbor Agents.
+

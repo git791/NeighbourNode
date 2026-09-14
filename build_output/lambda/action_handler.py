@@ -69,8 +69,8 @@ def handle_offer(body):
         
         approval_id = f"approval-{uuid.uuid4().hex[:8]}"
         put_item({
-            "PK": "QUEUE#APPROVAL",
-            "SK": approval_id,
+            "PK": f"APPROVAL#{approval_id}",
+            "SK": "META",
             "approval_id": approval_id,
             "item_type": "offer",
             "item_id": offer_id,
@@ -80,19 +80,44 @@ def handle_offer(body):
         })
         return _response(200, {"success": True, "offer": offer_item, "flagged": True})
 
+    # 3. Trigger the agent chain (match → dispatch) so the offer is handled autonomously,
+    #    just as it would be if the donor had texted their offer via SMS.
+    try:
+        from neighbornode.agents.orchestrator import process_event
+        process_event(
+            text=f"Donor offer: {food_type}, qty {body.get('quantity', 'unknown')}, notes: {notes}",
+            sender=body.get("donor_name", "webform"),
+            channel="webform",
+        )
+    except Exception as exc:
+        logger.warning(f"Orchestrator chain failed after offer submission: {exc}")
+
     return _response(200, {"success": True, "offer": offer_item})
 
 def handle_fridge_status(body, status):
     fridge_id = body.get("fridge_id")
     if not fridge_id:
         return _response(400, {"error": "Missing fridge_id"})
-        
+
     pk = f"FRIDGE#{fridge_id.replace('fridge-', '')}"
-    
+
     update_item_attr(pk, "META", "status", status)
     filled_count = 0 if status == "empty" else 2
     update_item_attr(pk, "META", "filled_count", filled_count)
     update_item_attr(pk, "META", "last_restocked_at", datetime.datetime.now(datetime.timezone.utc).isoformat())
+
+    # Trigger the full agent chain (match → dispatch) when a fridge goes empty or low,
+    # so dashboard host actions are equivalent to sending an SMS "EMPTY" text.
+    if status in ("empty", "low"):
+        try:
+            from neighbornode.agents.orchestrator import process_event
+            process_event(
+                text=f"Fridge {fridge_id} is {status}",
+                sender=body.get("host_phone", "dashboard"),
+                channel="dashboard",
+            )
+        except Exception as exc:
+            logger.warning(f"Orchestrator chain failed after fridge status update: {exc}")
 
     return _response(200, {"success": True, "status": status})
 

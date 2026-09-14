@@ -1,112 +1,112 @@
 {
   "_comment": "Seed data for the NeighborNode local demo. Run: python -m neighbornode.local_runner --seed data/seed_demo.json",
-  "_note": "Coordinates are realistic Brooklyn, NYC locations. Phone numbers use a non-dialable demo prefix.",
+  "_note": "Coordinates are realistic Srinagar, Kashmir locations. Phone numbers use a non-dialable demo prefix, except the coordinator/runner.",
 
   "fridges": [
     {
-      "id": "fridge-5th-dean",
-      "name": "5th Ave & Dean St Fridge",
-      "address": "5th Ave & Dean St, Brooklyn, NY 11217",
-      "lat": 40.6802,
-      "lng": -73.9764,
+      "id": "fridge-residency-road",
+      "name": "Residency Road Fridge",
+      "address": "Residency Road, Srinagar, J&K 190001",
+      "lat": 34.0722,
+      "lng": 74.8211,
       "capacity": 5,
       "status": "empty",
       "last_restocked_at": "2026-08-14T18:30:00Z",
-      "host_phone": "+17185550101",
-      "notes": "Blue door, behind the laundromat on the corner"
+      "host_phone": "+919900000001",
+      "notes": "Blue door, near the main square"
     },
     {
-      "id": "fridge-crown-bedford",
-      "name": "Crown St & Bedford Ave Fridge",
-      "address": "Crown St & Bedford Ave, Brooklyn, NY 11225",
-      "lat": 40.6618,
-      "lng": -73.9579,
+      "id": "fridge-dal-lake",
+      "name": "Dal Lake Boulevard Fridge",
+      "address": "Boulevard Road, Dal Lake, Srinagar, J&K 190001",
+      "lat": 34.0837,
+      "lng": 74.8450,
       "capacity": 4,
       "status": "low",
       "last_restocked_at": "2026-08-15T09:00:00Z",
-      "host_phone": "+17185550102",
-      "notes": "Red fridge, outside Lena's salon — ask inside if locked"
+      "host_phone": "+919900000002",
+      "notes": "Red fridge, outside the Shikara stand"
     },
     {
-      "id": "fridge-prospect-7th",
-      "name": "Prospect Ave & 7th Ave Fridge",
-      "address": "Prospect Ave & 7th Ave, Brooklyn, NY 11215",
-      "lat": 40.6581,
-      "lng": -73.9829,
+      "id": "fridge-lal-chowk",
+      "name": "Lal Chowk Fridge",
+      "address": "Lal Chowk, Srinagar, J&K 190001",
+      "lat": 34.0724,
+      "lng": 74.8052,
       "capacity": 6,
       "status": "stocked",
       "last_restocked_at": "2026-08-15T14:00:00Z",
-      "host_phone": "+17185550103",
-      "notes": "Green fridge with mural by José M., next to the bike rack"
+      "host_phone": "+919900000003",
+      "notes": "Green fridge next to the clock tower"
     },
     {
-      "id": "fridge-bedford-monroe",
-      "name": "Bedford Ave & Monroe St Fridge",
-      "address": "Bedford Ave & Monroe St, Brooklyn, NY 11216",
-      "lat": 40.6919,
-      "lng": -73.9529,
+      "id": "fridge-hazratbal",
+      "name": "Hazratbal Shrine Fridge",
+      "address": "Hazratbal, Srinagar, J&K 190006",
+      "lat": 34.1332,
+      "lng": 74.8398,
       "capacity": 3,
       "status": "empty",
       "last_restocked_at": "2026-08-13T20:00:00Z",
-      "host_phone": "+17185550104",
-      "notes": "White fridge with hand-painted flowers, under the awning"
+      "host_phone": "+919900000004",
+      "notes": "White fridge with floral patterns, near the entrance"
     }
   ],
 
   "donors": [
     {
-      "id": "donor-maplewood-bakery",
-      "name": "Maplewood Bakery",
-      "address": "234 Flatbush Ave, Brooklyn, NY 11217",
-      "lat": 40.6750,
-      "lng": -73.9700,
-      "phone": "+17185550201",
+      "id": "donor-mughal-darbar",
+      "name": "Mughal Darbar Bakery",
+      "address": "Residency Road, Srinagar, J&K 190001",
+      "lat": 34.0740,
+      "lng": 74.8100,
+      "phone": "+919900000005",
       "channel": "sms",
       "verified": true,
-      "notes": "End-of-day bread available most weekdays after 6 PM"
+      "notes": "End-of-day bread and naan available most weekdays after 6 PM"
     },
     {
-      "id": "donor-corner-garden",
-      "name": "Corner Garden Collective",
-      "address": "890 Nostrand Ave, Brooklyn, NY 11225",
-      "lat": 40.6650,
-      "lng": -73.9480,
-      "phone": "+17185550202",
+      "id": "donor-shalimar-farmers",
+      "name": "Shalimar Farmers Collective",
+      "address": "Shalimar, Srinagar, J&K 190025",
+      "lat": 34.1480,
+      "lng": 74.8710,
+      "phone": "+919900000006",
       "channel": "sms",
       "verified": true,
-      "notes": "Community garden — seasonal produce, weekends and Wednesday evenings"
+      "notes": "Community garden - seasonal produce"
     },
     {
       "id": "donor-sunrise-grocery",
       "name": "Sunrise Grocery",
-      "address": "412 Rogers Ave, Brooklyn, NY 11225",
-      "lat": 40.6820,
-      "lng": -73.9510,
-      "phone": "+17185550203",
+      "address": "Rajbagh, Srinagar, J&K 190008",
+      "lat": 34.0610,
+      "lng": 74.8150,
+      "phone": "+919900000007",
       "channel": "sms",
       "verified": false,
-      "notes": "New donor — first offer held for Coordinator confirmation per guardrail policy"
+      "notes": "New donor - first offer held for Coordinator confirmation per guardrail policy"
     }
   ],
 
   "runners": [
     {
-      "id": "runner-alex-m",
-      "name": "Alex M.",
-      "phone": "+17185550301",
-      "lat": 40.6750,
-      "lng": -73.9750,
+      "id": "runner-aamir",
+      "name": "Aamir M.",
+      "phone": "+919906104035",
+      "lat": 34.0750,
+      "lng": 74.8150,
       "availability": "available",
       "active_dispatch_id": null,
       "transport": "bicycle",
       "notes": "Available weekday evenings and weekends"
     },
     {
-      "id": "runner-jordan-k",
+      "id": "runner-jordan",
       "name": "Jordan K.",
-      "phone": "+17185550302",
-      "lat": 40.6680,
-      "lng": -73.9700,
+      "phone": "+919900000009",
+      "lat": 34.0680,
+      "lng": 74.8100,
       "availability": "available",
       "active_dispatch_id": null,
       "transport": "car",
@@ -116,20 +116,20 @@
 
   "offers": [
     {
-      "id": "offer-maplewood-bread-001",
-      "donor_id": "donor-maplewood-bakery",
-      "food_type": "whole grain bread loaves",
-      "qty_estimate": "8 loaves (~4 kg)",
+      "id": "offer-mughal-bread-001",
+      "donor_id": "donor-mughal-darbar",
+      "food_type": "fresh naan and bakarkhani",
+      "qty_estimate": "10 pieces (~2 kg)",
       "perishability_window_hours": 18,
       "status": "open",
       "created_at": "2026-08-15T18:00:00Z",
-      "notes": "Assorted whole grain and sourdough, day-old but fresh"
+      "notes": "Leftover fresh bread from the day"
     },
     {
-      "id": "offer-corner-garden-veg-001",
-      "donor_id": "donor-corner-garden",
-      "food_type": "mixed garden vegetables",
-      "qty_estimate": "approx 3 kg — tomatoes, zucchini, herbs",
+      "id": "offer-shalimar-veg-001",
+      "donor_id": "donor-shalimar-farmers",
+      "food_type": "mixed fresh vegetables",
+      "qty_estimate": "approx 3 kg - tomatoes, nadru (lotus stem), herbs",
       "perishability_window_hours": 48,
       "status": "open",
       "created_at": "2026-08-15T16:30:00Z",
@@ -141,8 +141,8 @@
     {
       "_comment": "This is the simulated inbound SMS fired by local_runner.py to trigger the full orchestrator chain",
       "type": "inbound_sms",
-      "sender": "+17185550101",
-      "text": "5th st fridge is completely empty again :(",
+      "sender": "+919900000001",
+      "text": "Residency road fridge is completely empty again :(",
       "channel": "sms"
     }
   ]

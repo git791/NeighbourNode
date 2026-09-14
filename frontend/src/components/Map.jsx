@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Refrigerator } from 'lucide-react';
 import { FridgeCard } from './FridgeCard.jsx';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 const STATUS_COLORS = {
   stocked: '#2F6B4F',
@@ -41,25 +41,28 @@ function createPinIcon(status) {
   });
 }
 
-function MapUpdater({ center }) {
+function MapUpdater({ centerLat, centerLng }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
+    if (centerLat && centerLng) {
+        map.setView([centerLat, centerLng], map.getZoom());
+    }
+  }, [centerLat, centerLng, map]);
   return null;
 }
 
 export function Map({ fridges = [] }) {
-  const center = fridges.length > 0
-    ? [
-        fridges.reduce((s, f) => s + (f.lat || 40.68), 0) / fridges.length,
-        fridges.reduce((s, f) => s + (f.lng || -73.96), 0) / fridges.length,
-      ]
-    : [40.68, -73.96];
+  const centerLat = fridges.length > 0
+    ? fridges.reduce((s, f) => s + (f.lat || 40.68), 0) / fridges.length
+    : 40.68;
+    
+  const centerLng = fridges.length > 0
+    ? fridges.reduce((s, f) => s + (f.lng || -73.96), 0) / fridges.length
+    : -73.96;
 
   return (
-    <MapContainer center={center} zoom={13} style={{ width: '100%', height: '100%' }} zoomControl={true}>
-      <MapUpdater center={center} />
+    <MapContainer center={[centerLat, centerLng]} zoom={13} style={{ width: '100%', height: '100%' }} zoomControl={true}>
+      {fridges.length > 0 && <MapUpdater centerLat={centerLat} centerLng={centerLng} />}
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -1,7 +1,7 @@
-"""
-Dashboard handler — serves live coordinator dashboard state and on-demand reports.
+﻿"""
+Dashboard handler - serves live coordinator dashboard state and on-demand reports.
 
-GET /dashboard  → returns {fridges, offers, dispatches, approvals}
+GET /dashboard  -> returns {fridges, offers, dispatches, approvals}
 GET /report?from=YYYY-MM-DD&to=YYYY-MM-DD&format=markdown|pdf
 """
 import json
@@ -9,11 +9,21 @@ import logging
 import os
 import sys
 import base64
+from decimal import Decimal
 
 sys.path.insert(0, "/var/task")
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", "INFO"))
+
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            if obj % 1 == 0:
+                return int(obj)
+            return float(obj)
+        return super(DecimalEncoder, self).default(obj)
 
 
 def handler(event, context):
@@ -75,5 +85,5 @@ def _response(status_code: int, body: dict) -> dict:
     return {
         "statusCode": status_code,
         "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
-        "body": json.dumps(body),
+        "body": json.dumps(body, cls=DecimalEncoder),
     }

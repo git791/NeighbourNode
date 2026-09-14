@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>NeighborNode SMS Simulator</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .chat-box { border: 1px solid #ccc; padding: 20px; border-radius: 8px; margin-bottom: 20px; height: 300px; overflow-y: auto; background: #f9f9f9; }
+        .message { margin-bottom: 10px; padding: 10px; border-radius: 4px; max-width: 80%; }
+        .sent { background: #dcf8c6; margin-left: auto; text-align: right; }
+        .received { background: #fff; border: 1px solid #eee; }
+        input, select, button { padding: 8px; margin: 5px 0; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h2>NeighborNode SMS Simulator</h2>
+    <p>Use this tool to simulate sending SMS texts to the AI Orchestrator.</p>
+    
+    <div class="controls">
+        <label>Simulate Sender:</label>
+        <select id="sender">
+            <option value="+919900000001">Host (Residency Rd Fridge) - +919900000001</option>
+            <option value="+919906104035">Runner (Aamir) - +919906104035</option>
+            <option value="+919900000005">Donor (Mughal Darbar) - +919900000005</option>
+            <option value="+1234567890">Unknown Number</option>
+        </select>
+    </div>
+
+    <div class="chat-box" id="chat"></div>
+
+    <form id="smsForm" style="display: flex; gap: 10px;">
+        <input type="text" id="text" placeholder="Type message (e.g. 'fridge is empty')" style="flex: 1;" required>
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        const API_URL = "https://o43p12vuj1.execute-api.ap-south-1.amazonaws.com/inbound";
+        
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = message ;
+            div.textContent = text;
+            document.getElementById('chat').appendChild(div);
+            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+        }
+
+        document.getElementById('smsForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const text = document.getElementById('text').value;
+            const sender = document.getElementById('sender').value;
+            
+            addMessage(You (): , 'sent');
+            document.getElementById('text').value = '';
+            
+            try {
+                addMessage('System processing...', 'received');
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, sender, channel: "sms" })
+                });
+                const result = await response.json();
+                
+                // Remove the "processing" message
+                const chat = document.getElementById('chat');
+                chat.removeChild(chat.lastChild);
+                
+                addMessage(Response: , 'received');
+            } catch (err) {
+                addMessage(Error: , 'received');
+            }
+        };
+    </script>
+</body>
+</html>

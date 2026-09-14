@@ -9,6 +9,11 @@ description = "Autonomous agent network for community fridge and mutual-aid oper
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
+authors = [
+    { name = "Mohammed Ayaan Adil Ahmed" },
+    { name = "Syed Aatira Zaffar Andrabi" },
+    { name = "Wania Qamar" },
+]
 dependencies = [
     "strands-agents>=0.1.0",
     "boto3>=1.34.0",
