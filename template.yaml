@@ -1,6 +1,6 @@
-AWSTemplateFormatVersion: '2010-09-09'
+﻿AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: NeighborNode — autonomous agent network for community fridge operations
+Description: NeighborNode â€” autonomous agent network for community fridge operations
 
 Globals:
   Function:
@@ -12,8 +12,8 @@ Globals:
       Variables:
         DYNAMODB_TABLE_NAME: !Ref NeighborNodeTable
         AWS_REGION_NAME: !Ref AWS::Region   # use AWS_REGION_NAME to avoid collision with reserved AWS_REGION
-        BEDROCK_MODEL_ID: amazon.nova-lite-v1
-        BEDROCK_MODEL_ID_MICRO: amazon.nova-micro-v1
+        BEDROCK_MODEL_ID: amazon.nova-lite-v1:0
+        BEDROCK_MODEL_ID_MICRO: amazon.nova-micro-v1:0
         FOOD_SAFETY_EXCLUSION_LIST: config/food_safety_exclusions.json
         SUPPORTED_LANGUAGES: "en,es"
         LOG_LEVEL: INFO
@@ -57,7 +57,7 @@ Resources:
         AttributeName: ttl
         Enabled: true
 
-  # ── Cognito Auth ───────────────────────────────────────────────────────────
+  # â”€â”€ Cognito Auth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # One User Pool per role group. All free-tier eligible.
   # Self-service sign-up is enabled for Host, Donor, and Runner.
   # Coordinator is admin-invite-only (PreSignUp trigger blocks self-registration).
@@ -102,7 +102,7 @@ Resources:
     Properties:
       ClientName: NeighborNodeWebApp
       UserPoolId: !Ref NeighborNodeUserPool
-      GenerateSecret: false            # SPA — no client secret
+      GenerateSecret: false            # SPA â€” no client secret
       ExplicitAuthFlows:
         - ALLOW_USER_SRP_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
@@ -138,14 +138,14 @@ Resources:
       Domain: !Sub "neighbornode-${AWS::AccountId}"
       UserPoolId: !Ref NeighborNodeUserPool
 
-  # ── /auth Lambda — register, confirm, sign-in, profile, sign-out ──────────
+  # â”€â”€ /auth Lambda â€” register, confirm, sign-in, profile, sign-out â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   AuthFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: lambda/auth_handler.handler
       Role: !GetAtt LambdaExecutionRole.Arn
-      Description: Cognito-backed auth — register, confirm, sign-in, profile, sign-out
+      Description: Cognito-backed auth â€” register, confirm, sign-in, profile, sign-out
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !Ref NeighborNodeUserPool
@@ -374,7 +374,7 @@ Resources:
   NeighborNodeApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      Description: NeighborNode API — inbound webhooks + dashboard state
+      Description: NeighborNode API â€” inbound webhooks + dashboard state
       CorsConfiguration:
         AllowOrigins:
           - "*"           # Restrict to your Amplify domain in production
@@ -388,7 +388,7 @@ Resources:
 
 Outputs:
   ApiBaseUrl:
-    Description: "API Gateway base URL — copy this into frontend/.env.local as VITE_API_BASE_URL"
+    Description: "API Gateway base URL â€” copy this into frontend/.env.local as VITE_API_BASE_URL"
     Value: !Sub "https://${NeighborNodeApi}.execute-api.${AWS::Region}.amazonaws.com"
     Export:
       Name: NeighborNodeApiBaseUrl
@@ -400,13 +400,13 @@ Outputs:
       Name: NeighborNodeTableName
 
   CognitoUserPoolId:
-    Description: "Cognito User Pool ID — copy to frontend/.env.local as VITE_COGNITO_USER_POOL_ID"
+    Description: "Cognito User Pool ID â€” copy to frontend/.env.local as VITE_COGNITO_USER_POOL_ID"
     Value: !Ref NeighborNodeUserPool
     Export:
       Name: NeighborNodeUserPoolId
 
   CognitoClientId:
-    Description: "Cognito App Client ID — copy to frontend/.env.local as VITE_COGNITO_CLIENT_ID"
+    Description: "Cognito App Client ID â€” copy to frontend/.env.local as VITE_COGNITO_CLIENT_ID"
     Value: !GetAtt NeighborNodeUserPoolClient.ClientId
     Export:
       Name: NeighborNodeClientId

@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+﻿from pydantic_settings import BaseSettings, SettingsConfigDict
 import logging
 
 class Settings(BaseSettings):
@@ -6,8 +6,8 @@ class Settings(BaseSettings):
     
     aws_region: str = "us-east-1"
     dynamodb_table_name: str = "NeighborNodeTable"
-    bedrock_model_id: str = "amazon.nova-lite-v1"
-    bedrock_model_id_micro: str = "amazon.nova-micro-v1"
+    bedrock_model_id: str = "amazon.nova-lite-v1:0"
+    bedrock_model_id_micro: str = "amazon.nova-micro-v1:0"
     pinpoint_app_id: str = ""
     pinpoint_origination_number: str = ""
     food_safety_exclusion_list: str = "config/food_safety_exclusions.json"
