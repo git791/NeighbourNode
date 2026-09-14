@@ -12,7 +12,7 @@ export function RunnerPage({ dispatches = [], fridges = [], offers = [], runners
 
   // Use runners from the database; fall back to extracting from dispatches if not provided
   const runnerOptions = runners.length > 0
-    ? runners.map(r => ({ id: r.entity_id || r.PK.replace("RUNNER#", ""), name: r.name || r.entity_id }))
+    ? runners.map(r => ({ id: r.entity_id || r.PK.replace('RUNNER#', ''), name: r.name || r.entity_id }))
     : [...new Set(dispatches.map((d) => d.runner_id).filter(Boolean))].map(id => ({ id, name: id }));
 
   const myDispatches = dispatches.filter((d) => d.runner_id === selectedRunner);
@@ -43,8 +43,8 @@ export function RunnerPage({ dispatches = [], fridges = [], offers = [], runners
             Select your name
             <select value={selectedRunner} onChange={(e) => setSelectedRunner(e.target.value)}>
               <option value="">Choose runner</option>
-              {runnerIds.map((id) => (
-                <option key={id} value={id}>{id}</option>
+              {runnerOptions.map(({ id, name }) => (
+                <option key={id} value={id}>{name}</option>
               ))}
             </select>
           </label>
@@ -95,8 +95,8 @@ export function RunnerPage({ dispatches = [], fridges = [], offers = [], runners
                 <MapPin size={28} color="var(--chalkboard-muted)" />
                 <div className="empty-delivery-state__title">No more deliveries for now</div>
                 <p className="empty-delivery-state__text">
-                  You're all caught up! New deliveries will appear here when they're assigned to you.
-                  Thank you for making a difference. â¤ï¸
+                  You are all caught up! New deliveries will appear here when they are assigned to you.
+                  Thank you for making a difference.
                 </p>
               </div>
             )}
