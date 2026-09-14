@@ -1,5 +1,5 @@
-"""
-auth_handler.py — Cognito-backed auth for NeighborNode
+﻿"""
+auth_handler.py â€” Cognito-backed auth for NeighborNode
 
 Routes:
   POST /auth/register   body: {email, password, role, display_name, phone?, transport?}
@@ -11,9 +11,9 @@ Routes:
   POST /auth/signout    header: Authorization: Bearer <access_token>
 
 Cognito custom attributes stored on the user:
-  custom:role         — host | donor | runner | coordinator
-  custom:display_name — human-readable name shown in the UI
-  custom:transport    — bicycle | car | walking  (runners only)
+  custom:role         â€” host | donor | runner | coordinator
+  custom:display_name â€” human-readable name shown in the UI
+  custom:transport    â€” bicycle | car | walking  (runners only)
 
 Per-user progress (donation count, delivery count) lives in DynamoDB under
   PK: USER#{cognito_sub}  SK: META
@@ -40,9 +40,23 @@ cognito = boto3.client("cognito-idp", region_name=os.environ.get("AWS_REGION_NAM
 ALLOWED_ROLES = {"host", "donor", "runner", "coordinator"}
 
 
-# ── helpers ──────────────────────────────────────────────────────────────────
+# â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+from decimal import Decimal
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            if obj % 1 == 0:
+                return int(obj)
+            return float(obj)
+        return super(DecimalEncoder, self).default(obj)
 
 def _response(status_code: int, body: dict) -> dict:
+    return {
+        "statusCode": status_code,
+        "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
+        "body": json.dumps(body, cls=DecimalEncoder),
+    }
     return {
         "statusCode": status_code,
         "headers": {"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
@@ -110,10 +124,10 @@ def _ensure_user_record(sub: str, role: str, display_name: str) -> None:
         logger.warning(f"Could not create user record for {sub}: {e}")
 
 
-# ── route handlers ────────────────────────────────────────────────────────────
+# â”€â”€ route handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def handle_register(body: dict) -> dict:
-    """POST /auth/register — create a Cognito account and DynamoDB user record."""
+    """POST /auth/register â€” create a Cognito account and DynamoDB user record."""
     email = body.get("email", "").strip().lower()
     password = body.get("password", "")
     role = body.get("role", "").strip().lower()
@@ -159,7 +173,7 @@ def handle_register(body: dict) -> dict:
 
 
 def handle_confirm(body: dict) -> dict:
-    """POST /auth/confirm — verify email with the 6-digit code from Cognito."""
+    """POST /auth/confirm â€” verify email with the 6-digit code from Cognito."""
     email = body.get("email", "").strip().lower()
     code = body.get("code", "").strip()
     if not email or not code:
@@ -179,7 +193,7 @@ def handle_confirm(body: dict) -> dict:
 
 
 def handle_signin(body: dict) -> dict:
-    """POST /auth/signin — authenticate and return tokens + profile."""
+    """POST /auth/signin â€” authenticate and return tokens + profile."""
     email = body.get("email", "").strip().lower()
     password = body.get("password", "")
     if not email or not password:
@@ -237,7 +251,7 @@ def handle_signin(body: dict) -> dict:
 
 
 def handle_get_profile(event: dict) -> dict:
-    """GET /auth/profile — return full user profile + progress."""
+    """GET /auth/profile â€” return full user profile + progress."""
     token = _get_token(event)
     if not token:
         return _response(401, {"error": "Missing Authorization header"})
@@ -261,7 +275,7 @@ def handle_get_profile(event: dict) -> dict:
 
 
 def handle_update_profile(event: dict, body: dict) -> dict:
-    """PUT /auth/profile — update display_name, phone_number, transport."""
+    """PUT /auth/profile â€” update display_name, phone_number, transport."""
     token = _get_token(event)
     if not token:
         return _response(401, {"error": "Missing Authorization header"})
@@ -305,7 +319,7 @@ def handle_update_profile(event: dict, body: dict) -> dict:
 
 
 def handle_signout(event: dict) -> dict:
-    """POST /auth/signout — globally invalidate all tokens for this user."""
+    """POST /auth/signout â€” globally invalidate all tokens for this user."""
     token = _get_token(event)
     if not token:
         return _response(401, {"error": "Missing Authorization header"})
@@ -317,7 +331,7 @@ def handle_signout(event: dict) -> dict:
         return _response(400, {"error": e.response["Error"]["Message"]})
 
 
-# ── main router ───────────────────────────────────────────────────────────────
+# â”€â”€ main router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def handler(event, context):
     path = event.get("rawPath", event.get("path", ""))

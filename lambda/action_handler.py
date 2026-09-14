@@ -1,4 +1,4 @@
-import json
+﻿import json
 import logging
 import os
 import sys
@@ -8,7 +8,20 @@ import uuid
 sys.path.insert(0, "/var/task")
 
 from neighbornode.db import put_item, update_item_attr
-from neighbornode.skills.dispatch import check_safety_exclusion
+# Import the raw logic directly, bypassing the Strands @tool wrapper which intercepts kwargs
+def check_safety_exclusion(food_type: str, notes: str = "") -> dict:
+    import json
+    from neighbornode.config import settings
+    try:
+        with open(settings.food_safety_exclusion_list, "r") as f:
+            exclusions = json.load(f)
+    except Exception:
+        exclusions = ["raw meat", "unpasteurized", "homemade alcohol", "expired"]
+    text_to_check = f"{food_type} {notes}".lower()
+    for ex in exclusions:
+        if ex.lower() in text_to_check:
+            return {"excluded": True, "matched_pattern": ex, "reason": f"Matches exclusion rule: {ex}"}
+    return {"excluded": False, "matched_pattern": None, "reason": None}
 
 logger = logging.getLogger()
 logger.setLevel(os.environ.get("LOG_LEVEL", "INFO"))
@@ -80,7 +93,7 @@ def handle_offer(body):
         })
         return _response(200, {"success": True, "offer": offer_item, "flagged": True})
 
-    # 3. Trigger the agent chain (match → dispatch) so the offer is handled autonomously,
+    # 3. Trigger the agent chain (match â†’ dispatch) so the offer is handled autonomously,
     #    just as it would be if the donor had texted their offer via SMS.
     try:
         from neighbornode.agents.orchestrator import process_event
@@ -106,7 +119,7 @@ def handle_fridge_status(body, status):
     update_item_attr(pk, "META", "filled_count", filled_count)
     update_item_attr(pk, "META", "last_restocked_at", datetime.datetime.now(datetime.timezone.utc).isoformat())
 
-    # Trigger the full agent chain (match → dispatch) when a fridge goes empty or low,
+    # Trigger the full agent chain (match â†’ dispatch) when a fridge goes empty or low,
     # so dashboard host actions are equivalent to sending an SMS "EMPTY" text.
     if status in ("empty", "low"):
         try:

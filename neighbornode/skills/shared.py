@@ -1,4 +1,4 @@
-from strands.tools import tool
+﻿from strands.tools import tool
 import datetime
 from neighbornode.db import put_item, scan_by_status
 
@@ -47,10 +47,16 @@ def get_dashboard_state() -> dict:
     except Exception:
         pass  # Forecasts are best-effort; don't break the dashboard if missing
 
+    # Also fetch all runners for the runner page dropdown
+    runners = table.scan(
+        FilterExpression=Attr("PK").begins_with("RUNNER#") & Attr("SK").eq("META")
+    ).get("Items", [])
+
     return {
         "fridges": fridges,
-        "open_offers": open_offers,
-        "active_dispatches": active_dispatches,
-        "pending_approvals": pending_approvals,
+        "offers": open_offers,
+        "dispatches": active_dispatches,
+        "approvals": pending_approvals,
         "forecasts": forecasts,
+        "runners": runners,
     }
