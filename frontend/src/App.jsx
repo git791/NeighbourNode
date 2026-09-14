@@ -132,12 +132,7 @@ export default function App() {
       )}
 
       {view === 'runner' && (
-        <RunnerPage
-          dispatches={dispatches}
-          fridges={fridges}
-          offers={offers}
-          onComplete={handleCompleteDelivery}
-        />
+        <RunnerPage dispatches={dispatches} fridges={fridges} offers={offers} runners={state.runners} onComplete={handleCompleteDelivery} />
       )}
 
       {/* Report modal */}
