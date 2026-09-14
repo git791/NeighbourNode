@@ -1,16 +1,19 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { RunnerHeader } from './RunnerHeader.jsx';
 import { DeliveryCard } from './DeliveryCard.jsx';
 import { RunnerSidebar } from './RunnerSidebar.jsx';
 import { DonorBanner } from './DonorBanner.jsx';
 
-export function RunnerPage({ dispatches = [], fridges = [], offers = [], onComplete }) {
+export function RunnerPage({ dispatches = [], fridges = [], offers = [], runners = [], onComplete }) {
   const [selectedRunner, setSelectedRunner] = useState('');
   const [completingId, setCompletingId] = useState(null);
   const [tab, setTab] = useState('active');
 
-  const runnerIds = [...new Set(dispatches.map((d) => d.runner_id).filter(Boolean))];
+  // Use runners from the database; fall back to extracting from dispatches if not provided
+  const runnerOptions = runners.length > 0
+    ? runners.map(r => ({ id: r.entity_id || r.PK.replace("RUNNER#", ""), name: r.name || r.entity_id }))
+    : [...new Set(dispatches.map((d) => d.runner_id).filter(Boolean))].map(id => ({ id, name: id }));
 
   const myDispatches = dispatches.filter((d) => d.runner_id === selectedRunner);
   const active = myDispatches.filter((d) => ['pending', 'active'].includes(d.status));
@@ -93,7 +96,7 @@ export function RunnerPage({ dispatches = [], fridges = [], offers = [], onCompl
                 <div className="empty-delivery-state__title">No more deliveries for now</div>
                 <p className="empty-delivery-state__text">
                   You're all caught up! New deliveries will appear here when they're assigned to you.
-                  Thank you for making a difference. ❤️
+                  Thank you for making a difference. â¤ï¸
                 </p>
               </div>
             )}
