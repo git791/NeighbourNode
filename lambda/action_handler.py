@@ -16,11 +16,16 @@ def check_safety_exclusion(food_type: str, notes: str = "") -> dict:
         with open(settings.food_safety_exclusion_list, "r") as f:
             exclusions = json.load(f)
     except Exception:
-        exclusions = ["raw meat", "unpasteurized", "homemade alcohol", "expired"]
+        exclusions = [{"pattern": "raw meat"}, {"pattern": "unpasteurized"}]
+        
     text_to_check = f"{food_type} {notes}".lower()
     for ex in exclusions:
-        if ex.lower() in text_to_check:
-            return {"excluded": True, "matched_pattern": ex, "reason": f"Matches exclusion rule: {ex}"}
+        # Check if ex is a dict (from JSON) or just a string fallback
+        pat = ex.get("pattern", "") if isinstance(ex, dict) else str(ex)
+        if pat.lower() in text_to_check:
+            reason = ex.get("reason", f"Matches exclusion rule: {pat}") if isinstance(ex, dict) else f"Matches exclusion rule: {pat}"
+            return {"excluded": True, "matched_pattern": pat, "reason": reason}
+            
     return {"excluded": False, "matched_pattern": None, "reason": None}
 
 logger = logging.getLogger()
