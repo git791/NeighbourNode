@@ -1,9 +1,10 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+﻿import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Refrigerator } from 'lucide-react';
 import { FridgeCard } from './FridgeCard.jsx';
+import { useEffect } from 'react';
 
 const STATUS_COLORS = {
   stocked: '#2F6B4F',
@@ -40,6 +41,14 @@ function createPinIcon(status) {
   });
 }
 
+function MapUpdater({ center }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, map.getZoom());
+  }, [center, map]);
+  return null;
+}
+
 export function Map({ fridges = [] }) {
   const center = fridges.length > 0
     ? [
@@ -49,7 +58,8 @@ export function Map({ fridges = [] }) {
     : [40.68, -73.96];
 
   return (
-    <MapContainer center={center} zoom={14} style={{ width: '100%', height: '100%' }} zoomControl={true}>
+    <MapContainer center={center} zoom={13} style={{ width: '100%', height: '100%' }} zoomControl={true}>
+      <MapUpdater center={center} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
